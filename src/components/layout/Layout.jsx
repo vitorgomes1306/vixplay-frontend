@@ -8,7 +8,7 @@ import { apiService } from '../../services/api';
 import LogoutModal from '../ui/LogoutModal';
 
 const Layout = ({ children }) => {
-  const { currentTheme, toggleTheme, isDark } = useTheme();
+  const { currentTheme, toggleTheme, isDark, themeMode, setThemeMode } = useTheme();
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -16,6 +16,7 @@ const Layout = ({ children }) => {
   const [sidebarHidden, setSidebarHidden] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [checkedAvatar, setCheckedAvatar] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -310,40 +311,80 @@ const Layout = ({ children }) => {
                 </button>
               )}
               
-              {/* Theme Toggle Icon */}
-              <button style={{
-                padding: '0.5rem',
-                backgroundColor: 'transparent',
-                color: currentTheme.textSecondary,
-                border: `1px solid ${currentTheme.border}`,
-                borderRadius: '0.375rem',
-                fontSize: '1.1rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = currentTheme.borderLight;
-                e.target.style.color = currentTheme.textPrimary;
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = currentTheme.textSecondary;
-              }}
-              onClick={toggleTheme}
-              title={isDark ? "Alternar para tema claro" : "Alternar para tema escuro"}
-              >
-                <i className={isDark ? "bi bi-sun" : "bi bi-moon"}></i>
-              </button>
+              {/* Theme Selector */}
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <button style={{
+                  padding: '0.5rem',
+                  backgroundColor: 'transparent',
+                  color: currentTheme.textSecondary,
+                  border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '0.375rem',
+                  fontSize: '1.1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = currentTheme.borderLight;
+                  e.target.style.color = currentTheme.textPrimary;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = currentTheme.textSecondary;
+                }}
+                onClick={() => setShowThemeMenu(prev => !prev)}
+                title={isDark ? "Tema atual: escuro (clique para escolher)" : "Tema atual: claro (clique para escolher)"}
+                >
+                  <i className={isDark ? "bi bi-sun" : "bi bi-moon"}></i>
+                </button>
+                {showThemeMenu && (
+                  <div style={{
+                    position: 'absolute',
+                    right: 0,
+                    marginTop: '8px',
+                    backgroundColor: currentTheme.cardBackground,
+                    border: `1px solid ${currentTheme.border}`,
+                    borderRadius: '0.5rem',
+                    boxShadow: currentTheme.shadowLg,
+                    minWidth: '180px',
+                    zIndex: 1000
+                  }}>
+                    {[
+                      { label: 'Claro', value: 'light', icon: 'bi bi-sun' },
+                      { label: 'Escuro', value: 'dark', icon: 'bi bi-moon' },
+                      { label: 'Sistema', value: 'system', icon: 'bi bi-laptop' }
+                    ].map(opt => (
+                      <button key={opt.value}
+                        onClick={() => { setThemeMode(opt.value); setShowThemeMenu(false); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          width: '100%',
+                          padding: '8px 12px',
+                          background: 'none',
+                          border: 'none',
+                          color: (themeMode === opt.value) ? currentTheme.primary : currentTheme.textPrimary,
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentTheme.hoverBackground}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <i className={opt.icon}></i>
+                        <span style={{ fontFamily: 'Poppins, sans-serif' }}>{opt.label}</span>
+                        {themeMode === opt.value && <i className="bi bi-check" style={{ marginLeft: 'auto' }}></i>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               
               <button style={{
                 padding: '0.5rem 1rem',
-                backgroundColor: '#ef4444',
-                color: 'white',
+                backgroundColor: currentTheme.buttonDanger,
+                color: currentTheme.buttonText || 'white',
                 border: 'none',
                 borderRadius: '0.375rem',
                 fontSize: '0.875rem',
@@ -352,8 +393,8 @@ const Layout = ({ children }) => {
                 fontFamily: 'Poppins, sans-serif',
                 fontWeight: '500'
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#dc2626'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#ef4444'}
+              onMouseEnter={(e) => e.target.style.backgroundColor = currentTheme.buttonDangerHover}
+              onMouseLeave={(e) => e.target.style.backgroundColor = currentTheme.buttonDanger}
               onClick={handleLogoutClick}
               >
                 Sair

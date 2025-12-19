@@ -11,19 +11,60 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    // Verifica se há um tema salvo no localStorage
-    const savedTheme = localStorage.getItem('vixplay-theme');
-    return savedTheme || 'light';
+  // Modo do tema: 'light' | 'dark' | 'system'
+  const [themeMode, setThemeMode] = useState(() => {
+    // Migração: aceitar chave antiga 'vixplay-theme' como fallback
+    const savedMode = localStorage.getItem('vixplay-theme-mode') || localStorage.getItem('vixplay-theme');
+    return savedMode || 'light';
   });
 
-  // Salva o tema no localStorage sempre que mudar
-  useEffect(() => {
-    localStorage.setItem('vixplay-theme', theme);
-  }, [theme]);
+  // Tema efetivo aplicado, derivado do mode e preferência do sistema
+  const [theme, setTheme] = useState(() => {
+    const initialMode = localStorage.getItem('vixplay-theme-mode') || localStorage.getItem('vixplay-theme') || 'light';
+    if (initialMode === 'system') {
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return prefersDark ? 'dark' : 'light';
+    }
+    return initialMode;
+  });
 
+  // Persistir modo e resolver tema efetivo quando modo mudar
+  useEffect(() => {
+    try {
+      localStorage.setItem('vixplay-theme-mode', themeMode);
+    } catch {}
+    if (themeMode === 'system') {
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    } else {
+      setTheme(themeMode);
+    }
+  }, [themeMode]);
+
+  // Ouvir mudanças do sistema quando em modo 'system'
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => {
+      if (themeMode === 'system') {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    if (mql.addEventListener) mql.addEventListener('change', handler);
+    else if (mql.addListener) mql.addListener(handler);
+    return () => {
+      if (mql.removeEventListener) mql.removeEventListener('change', handler);
+      else if (mql.removeListener) mql.removeListener(handler);
+    };
+  }, [themeMode]);
+
+  // Alternar apenas entre claro/escuro; se estiver em 'system', alterna para oposto do efetivo
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    if (themeMode === 'system') {
+      setThemeMode(theme === 'dark' ? 'light' : 'dark');
+    } else {
+      setThemeMode(prev => (prev === 'light' ? 'dark' : 'light'));
+    }
   };
 
   // Cores do tema
@@ -119,7 +160,9 @@ export const ThemeProvider = ({ children }) => {
   const currentTheme = themes[theme];
 
   const value = {
-    theme,
+    theme, // efetivo aplicado
+    themeMode, // modo selecionado pelo usuário
+    setThemeMode,
     currentTheme,
     toggleTheme,
     isDark: theme === 'dark'

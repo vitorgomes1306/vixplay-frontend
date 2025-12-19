@@ -4,9 +4,11 @@ import { apiService } from '../services/api';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Monitor, Layout, MonitorOff, DollarSign, Image, Video, FileText, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import WelcomeImg from '../assets/img/welcome.png';
+import { useTheme } from '../contexts/ThemeContext';
 
 function Dash() {
   const navigate = useNavigate();
+  const { currentTheme } = useTheme();
   const [stats, setStats] = useState({
     devices: 0,
     panels: 0,
@@ -477,7 +479,7 @@ function Dash() {
         alignItems: 'center',
         height: '50vh',
         fontSize: '1.2rem',
-        color: '#6b7280'
+        color: currentTheme.textSecondary
       }}>
         Carregando dashboard...
       </div>
@@ -487,9 +489,9 @@ function Dash() {
   if (error) {
     return (
       <div style={{
-        backgroundColor: '#fef2f2',
-        border: '1px solid #fecaca',
-        color: '#dc2626',
+        backgroundColor: `${currentTheme.error}20`,
+        border: `1px solid ${currentTheme.border}`,
+        color: currentTheme.error,
         padding: '0.75rem',
         borderRadius: '0.5rem',
         marginBottom: '1rem',
@@ -550,22 +552,23 @@ function Dash() {
 
       {/* Welcome Section */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: currentTheme.cardBackground,
         borderRadius: '0.5rem',
         padding: '2rem',
         marginBottom: '2rem',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        boxShadow: currentTheme.shadow,
+        border: `1px solid ${currentTheme.border}`
       }}>
         <h1 style={{
           fontSize: '2rem',
           fontWeight: '700',
-          color: '#1f2937',
+          color: currentTheme.textPrimary,
           margin: '0 0 0.5rem 0'
         }}>
           Bem-vindo ao Vix Play
         </h1>
         <p style={{
-          color: '#6b7280',
+          color: currentTheme.textSecondary,
           fontSize: '1.1rem',
           margin: 0
         }}>
@@ -583,11 +586,11 @@ function Dash() {
       }}>
         <a href="/devices" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
             padding: '1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-            borderLeft: '4px solid #3b82f6',
+            boxShadow: currentTheme.shadow,
+            borderLeft: `4px solid ${currentTheme.primary}`,
             cursor: 'pointer',
             position: 'relative',
             transition: 'all 0.s ease',
@@ -605,13 +608,13 @@ function Dash() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1f2937', fontSize: '0.9rem' }}>Dispositivos</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#3b82f6', margin: 0 }}>{stats.devices}</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Dispositivos</h3>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.devices}</p>
               </div>
-              <Monitor size={32} style={{ color: '#3b82f6', opacity: 0.7 }} />
+              <Monitor size={32} style={{ color: currentTheme.primary, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: '#10b981' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +12% este mês
             </div>
           </div>
@@ -619,11 +622,11 @@ function Dash() {
 
         <a href="/panels" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
             padding: '1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-            borderLeft: '4px solid #10b981',
+            boxShadow: currentTheme.shadow,
+            borderLeft: `4px solid ${currentTheme.success}`,
             cursor: 'pointer',
             position: 'relative',
             transition: 'all 0.3s ease',
@@ -641,13 +644,13 @@ function Dash() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1f2937', fontSize: '0.9rem' }}>Painéis</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981', margin: 0 }}>{stats.panels}</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Painéis</h3>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.success, margin: 0 }}>{stats.panels}</p>
               </div>
-              <Layout size={32} style={{ color: '#10b981', opacity: 0.7 }} />
+              <Layout size={32} style={{ color: currentTheme.success, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: '#10b981' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +8% este mês
             </div>
           </div>
@@ -655,11 +658,11 @@ function Dash() {
 
         <a href="/medias" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
             padding: '1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-            borderLeft: '4px solid #f59e0b',
+            boxShadow: currentTheme.shadow,
+            borderLeft: `4px solid ${currentTheme.warning}`,
             cursor: 'pointer',
             position: 'relative',
             transition: 'all 0.3s ease',
@@ -677,13 +680,13 @@ function Dash() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1f2937', fontSize: '0.9rem' }}>Mídias</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#f59e0b', margin: 0 }}>{stats.medias}</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Mídias</h3>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.warning, margin: 0 }}>{stats.medias}</p>
               </div>
-              <Image size={32} style={{ color: '#f59e0b', opacity: 0.7 }} />
+              <Image size={32} style={{ color: currentTheme.warning, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: '#10b981' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +25% este mês
             </div>
           </div>
@@ -691,11 +694,11 @@ function Dash() {
 
         <a href="/campaigns" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
             padding: '1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-            borderLeft: '4px solid #ef4444',
+            boxShadow: currentTheme.shadow,
+            borderLeft: `4px solid ${currentTheme.error}`,
             cursor: 'pointer',
             position: 'relative',
             transition: 'all 0.3s ease',
@@ -713,13 +716,13 @@ function Dash() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1f2937', fontSize: '0.9rem' }}>Campanhas</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444', margin: 0 }}>{stats.campaigns}</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Campanhas</h3>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.error, margin: 0 }}>{stats.campaigns}</p>
               </div>
-              <TrendingUp size={32} style={{ color: '#ef4444', opacity: 0.7 }} />
+              <TrendingUp size={32} style={{ color: currentTheme.error, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              <TrendingDown size={16} style={{ marginRight: '0.25rem', color: '#ef4444' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+              <TrendingDown size={16} style={{ marginRight: '0.25rem', color: currentTheme.error }} />
               -3% este mês
             </div>
           </div>
@@ -727,11 +730,11 @@ function Dash() {
 
         <a href="/clients" style={{ textDecoration: 'none' }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
             padding: '1rem',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-            borderLeft: '4px solid #8b5cf6',
+            boxShadow: currentTheme.shadow,
+            borderLeft: `4px solid ${currentTheme.primary}`,
             cursor: 'pointer',
             position: 'relative',
             transition: 'all 0.3s ease',
@@ -749,13 +752,13 @@ function Dash() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', color: '#1f2937', fontSize: '0.9rem' }}>Clientes</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#8b5cf6', margin: 0 }}>{stats.clients}</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Clientes</h3>
+                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.clients}</p>
               </div>
-              <DollarSign size={32} style={{ color: '#8b5cf6', opacity: 0.7 }} />
+              <DollarSign size={32} style={{ color: currentTheme.primary, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
-              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: '#10b981' }} />
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+              <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +15% este mês
             </div>
           </div>
@@ -766,16 +769,17 @@ function Dash() {
 
       {/* Quick Actions */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: currentTheme.cardBackground,
         borderRadius: '0.5rem',
         padding: '2rem',
         marginBottom: '2rem',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        boxShadow: currentTheme.shadow,
+        border: `1px solid ${currentTheme.border}`
       }}>
         <h2 style={{
           fontSize: '1.5rem',
           fontWeight: '600',
-          color: '#1f2937',
+          color: currentTheme.textPrimary,
           margin: '0 0 1.5rem 0'
         }}>
           Ações Rápidas
@@ -789,7 +793,7 @@ function Dash() {
             onClick={() => navigate('/devices?add=1')}
             style={{
             padding: '1rem',
-            backgroundColor: '#3b82f6',
+            backgroundColor: currentTheme.buttonPrimary,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
@@ -803,7 +807,7 @@ function Dash() {
             onClick={() => navigate('/panels?add=1')}
             style={{
             padding: '1rem',
-            backgroundColor: '#10b981',
+            backgroundColor: currentTheme.success,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
@@ -817,7 +821,7 @@ function Dash() {
             onClick={() => navigate('/medias?add=1')}
             style={{
             padding: '1rem',
-            backgroundColor: '#f59e0b',
+            backgroundColor: currentTheme.warning,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
@@ -831,7 +835,7 @@ function Dash() {
             onClick={() => navigate('/campaigns?add=1')}
             style={{
             padding: '1rem',
-            backgroundColor: '#ef4444',
+            backgroundColor: currentTheme.buttonDanger,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
@@ -846,21 +850,22 @@ function Dash() {
 
       {/* Recent Activity */}
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: currentTheme.cardBackground,
         borderRadius: '0.5rem',
         padding: '2rem',
         marginBottom: '2rem',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        boxShadow: currentTheme.shadow,
+        border: `1px solid ${currentTheme.border}`
       }}>
         <h2 style={{
           fontSize: '1.5rem',
           fontWeight: '600',
-          color: '#1f2937',
+          color: currentTheme.textPrimary,
           margin: '0 0 1.5rem 0'
         }}>
           Atividade Recente
         </h2>
-        <div style={{ color: '#6b7280' }}>
+        <div style={{ color: currentTheme.textSecondary }}>
           <p>• Dispositivo "TV Recepção" conectado há 2 horas</p>
           <p>• Nova mídia "Promoção Verão" adicionada</p>
           <p>• Campanha "Black Friday" iniciada</p>
@@ -877,14 +882,15 @@ function Dash() {
       }}>
         {/* Gráfico de Dispositivos Online/Offline */}
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: currentTheme.cardBackground,
           borderRadius: '0.5rem',
           padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          boxShadow: currentTheme.shadow,
+          border: `1px solid ${currentTheme.border}`
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <Monitor size={24} style={{ color: '#3b82f6', marginRight: '0.5rem' }} />
-            <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem', fontWeight: '600' }}>
+            <Monitor size={24} style={{ color: currentTheme.primary, marginRight: '0.5rem' }} />
+            <h3 style={{ margin: 0, color: currentTheme.textPrimary, fontSize: '1.25rem', fontWeight: '600' }}>
               Status dos Dispositivos
             </h3>
           </div>
@@ -929,23 +935,24 @@ function Dash() {
               <YAxis />
               <Tooltip formatter={(value) => [`R$ ${value}`, '']} />
               <Legend />
-              <Bar dataKey="paid" fill="#10b981" name="Pagos" />
-              <Bar dataKey="open" fill="#f59e0b" name="Em Aberto" />
-              <Bar dataKey="overdue" fill="#ef4444" name="Atrasados" />
+              <Bar dataKey="paid" fill={currentTheme.success} name="Pagos" />
+              <Bar dataKey="open" fill={currentTheme.warning} name="Em Aberto" />
+              <Bar dataKey="overdue" fill={currentTheme.error} name="Atrasados" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Gráfico de Tipos de Mídia */}
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: currentTheme.cardBackground,
           borderRadius: '0.5rem',
           padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          boxShadow: currentTheme.shadow,
+          border: `1px solid ${currentTheme.border}`
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <Image size={24} style={{ color: '#f59e0b', marginRight: '0.5rem' }} />
-            <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem', fontWeight: '600' }}>
+            <Image size={24} style={{ color: currentTheme.warning, marginRight: '0.5rem' }} />
+            <h3 style={{ margin: 0, color: currentTheme.textPrimary, fontSize: '1.25rem', fontWeight: '600' }}>
               Tipos de Mídia
             </h3>
           </div>
@@ -970,14 +977,15 @@ function Dash() {
 
         {/* Mini Cards com Mídias Recentes */}
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: currentTheme.cardBackground,
           borderRadius: '0.5rem',
           padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          boxShadow: currentTheme.shadow,
+          border: `1px solid ${currentTheme.border}`
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <Video size={24} style={{ color: '#8b5cf6', marginRight: '0.5rem' }} />
-            <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem', fontWeight: '600' }}>
+            <Video size={24} style={{ color: currentTheme.primary, marginRight: '0.5rem' }} />
+            <h3 style={{ margin: 0, color: currentTheme.textPrimary, fontSize: '1.25rem', fontWeight: '600' }}>
               Mídias Recentes
             </h3>
           </div>
@@ -987,28 +995,28 @@ function Dash() {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '0.75rem',
-                backgroundColor: '#f9fafb',
+                backgroundColor: currentTheme.secondary,
                 borderRadius: '0.375rem',
-                border: '1px solid #e5e7eb'
+                border: `1px solid ${currentTheme.border}`
               }}>
                 <div style={{
                   width: 48,
                   height: 48,
                   borderRadius: '0.375rem',
-                  backgroundColor: '#f9fafb',
+                  backgroundColor: currentTheme.secondary,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {media.type === 'image' && <Image size={20} color="#6b7280" />}
-                  {media.type === 'video' && <Video size={20} color="#6b7280" />}
-                  {media.type === 'document' && <FileText size={20} color="#6b7280" />}
+                  {media.type === 'image' && <Image size={20} color={currentTheme.textSecondary} />}
+                  {media.type === 'video' && <Video size={20} color={currentTheme.textSecondary} />}
+                  {media.type === 'document' && <FileText size={20} color={currentTheme.textSecondary} />}
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
+                  <p style={{ margin: 0, fontWeight: '500', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>
                     {media.name}
                   </p>
-                  <p style={{ margin: 0, color: '#6b7280', fontSize: '0.8rem', textTransform: 'capitalize' }}>
+                  <p style={{ margin: 0, color: currentTheme.textSecondary, fontSize: '0.8rem', textTransform: 'capitalize' }}>
                     {media.type === 'image' ? 'Imagem' : media.type === 'video' ? 'Vídeo' : 'Documento'}
                   </p>
                 </div>
@@ -1019,21 +1027,22 @@ function Dash() {
 
         {/* Lista de Mídias Globais */}
         <div style={{
-          backgroundColor: 'white',
+          backgroundColor: currentTheme.cardBackground,
           borderRadius: '0.5rem',
           padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          boxShadow: currentTheme.shadow,
+          border: `1px solid ${currentTheme.border}`
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <i className="bi bi-globe2" style={{ color: '#e74c3c', fontSize: 20, marginRight: '0.5rem' }}></i>
-            <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem', fontWeight: '600' }}>
+            <i className="bi bi-globe2" style={{ color: currentTheme.error, fontSize: 20, marginRight: '0.5rem' }}></i>
+            <h3 style={{ margin: 0, color: currentTheme.textPrimary, fontSize: '1.25rem', fontWeight: '600' }}>
               Mídias Globais
             </h3>
             <div style={{ marginLeft: 'auto' }}>
               <button onClick={loadGlobalMedias} style={{
-                background: '#fff',
-                color: '#111827',
-                border: '1px solid #e5e7eb',
+                background: currentTheme.cardBackground,
+                color: currentTheme.textPrimary,
+                border: `1px solid ${currentTheme.border}`,
                 borderRadius: '0.375rem',
                 padding: '0.5rem 0.75rem',
                 cursor: 'pointer'
@@ -1042,18 +1051,18 @@ function Dash() {
           </div>
 
           {globalError && (
-            <div style={{ backgroundColor: '#fee', color: '#c33', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid #fcc', marginBottom: '1rem' }}>
+            <div style={{ backgroundColor: `${currentTheme.error}20`, color: currentTheme.error, padding: '0.75rem', borderRadius: '0.375rem', border: `1px solid ${currentTheme.border}`, marginBottom: '1rem' }}>
               {globalError}
             </div>
           )}
 
           {globalLoading ? (
-            <div style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>
-              <div style={{ width: 32, height: 32, border: '4px solid #e5e7eb', borderTop: '4px solid #ef4444', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 0.75rem' }}></div>
+            <div style={{ padding: '1.5rem', textAlign: 'center', color: currentTheme.textSecondary }}>
+              <div style={{ width: 32, height: 32, border: `4px solid ${currentTheme.border}`, borderTop: `4px solid ${currentTheme.buttonDanger}` , borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 0.75rem' }}></div>
               Carregando mídias globais...
             </div>
           ) : globalMedias.length === 0 ? (
-            <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>
+            <div style={{ padding: '1rem', textAlign: 'center', color: currentTheme.textSecondary }}>
               Nenhuma mídia global cadastrada.
             </div>
           ) : (
@@ -1064,14 +1073,14 @@ function Dash() {
             }}>
               {globalMedias.map((m) => (
                 <div key={m.id} style={{
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: currentTheme.cardBackground,
+                  border: `1px solid ${currentTheme.border}`,
                   borderRadius: '0.75rem',
                   overflow: 'hidden'
                 }}>
                   <div style={{
                     height: 160,
-                    backgroundColor: '#f9fafb',
+                    backgroundColor: currentTheme.secondary,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1088,7 +1097,7 @@ function Dash() {
                       position: 'absolute',
                       top: '0.5rem',
                       right: '0.5rem',
-                      backgroundColor: '#e74c3c',
+                      backgroundColor: currentTheme.error,
                       color: 'white',
                       padding: '0.25rem 0.5rem',
                       borderRadius: '0.25rem',
@@ -1101,18 +1110,18 @@ function Dash() {
                       <div style={{
                         fontSize: '1.05rem',
                         fontWeight: 600,
-                        color: '#111827',
+                        color: currentTheme.textPrimary,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap'
                       }}>{m.title || 'Sem título'}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{m.duration ? `${m.duration}s` : ''}</div>
+                      <div style={{ fontSize: '0.8rem', color: currentTheme.textSecondary }}>{m.duration ? `${m.duration}s` : ''}</div>
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: currentTheme.textSecondary, marginTop: '0.25rem' }}>
                       {m.type} • {m.category || 'sem categoria'}
                     </div>
                     {m.dateExpire && (
-                      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                      <div style={{ fontSize: '0.8rem', color: currentTheme.textSecondary, marginTop: '0.25rem' }}>
                         Expira em {new Date(m.dateExpire).toLocaleDateString()}
                       </div>
                     )}
@@ -1139,7 +1148,7 @@ function Dash() {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '8px',
             padding: '2rem',
             width: '90%',
@@ -1153,7 +1162,7 @@ function Dash() {
               alignItems: 'center',
               marginBottom: '1.5rem'
             }}>
-              <h2 style={{ margin: 0, color: '#1f2937' }}>Novo Dispositivo</h2>
+              <h2 style={{ margin: 0, color: currentTheme.textPrimary }}>Novo Dispositivo</h2>
               <button
                 onClick={() => {
                   setShowDeviceModal(false);
@@ -1164,7 +1173,7 @@ function Dash() {
                   border: 'none',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
-                  color: '#6b7280'
+                  color: currentTheme.textSecondary
                 }}
               >
                 ×
@@ -1173,8 +1182,8 @@ function Dash() {
 
             {modalError && (
               <div style={{
-                backgroundColor: '#fee2e2',
-                color: '#dc2626',
+                backgroundColor: `${currentTheme.error}20`,
+                color: currentTheme.error,
                 padding: '0.75rem',
                 borderRadius: '4px',
                 marginBottom: '1rem',
@@ -1212,7 +1221,7 @@ function Dash() {
                         textAlign: 'center',
                         fontSize: '1.25rem',
                         fontWeight: 'bold',
-                        border: '2px solid #d1d5db',
+                        border: `2px solid ${currentTheme.border}`,
                         borderRadius: '4px',
                         outline: 'none'
                       }}
@@ -1238,7 +1247,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem'
                   }}
@@ -1262,7 +1271,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem'
                   }}
@@ -1287,7 +1296,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem'
                   }}
@@ -1340,10 +1349,10 @@ function Dash() {
                   }}
                   style={{
                     padding: '0.75rem 1.5rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
-                    backgroundColor: 'white',
-                    color: '#374151',
+                    backgroundColor: currentTheme.cardBackground,
+                    color: currentTheme.textPrimary,
                     cursor: 'pointer',
                     fontSize: '1rem'
                   }}
@@ -1357,7 +1366,7 @@ function Dash() {
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     borderRadius: '4px',
-                    backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
+                    backgroundColor: isSubmitting ? currentTheme.textMuted : currentTheme.buttonPrimary,
                     color: 'white',
                     cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     fontSize: '1rem'
@@ -1386,7 +1395,7 @@ function Dash() {
           zIndex: 1000
         }}>
           <div style={{
-            backgroundColor: 'white',
+            backgroundColor: currentTheme.cardBackground,
             borderRadius: '8px',
             padding: '2rem',
             width: '90%',
@@ -1400,7 +1409,7 @@ function Dash() {
               alignItems: 'center',
               marginBottom: '1.5rem'
             }}>
-              <h2 style={{ margin: 0, color: '#1f2937' }}>Novo Painel</h2>
+              <h2 style={{ margin: 0, color: currentTheme.textPrimary }}>Novo Painel</h2>
               <button
                 onClick={() => {
                   setShowPanelModal(false);
@@ -1411,7 +1420,7 @@ function Dash() {
                   border: 'none',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
-                  color: '#6b7280'
+                  color: currentTheme.textSecondary
                 }}
               >
                 ×
@@ -1420,8 +1429,8 @@ function Dash() {
 
             {modalError && (
               <div style={{
-                backgroundColor: '#fee2e2',
-                color: '#dc2626',
+                backgroundColor: `${currentTheme.error}20`,
+                color: currentTheme.error,
                 padding: '0.75rem',
                 borderRadius: '4px',
                 marginBottom: '1rem',
@@ -1448,7 +1457,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem'
                   }}
@@ -1472,7 +1481,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem',
                     minHeight: '80px',
@@ -1497,7 +1506,7 @@ function Dash() {
                   style={{
                     width: '100%',
                     padding: '0.75rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
                     fontSize: '1rem'
                   }}
@@ -1521,10 +1530,10 @@ function Dash() {
                   }}
                   style={{
                     padding: '0.75rem 1.5rem',
-                    border: '1px solid #d1d5db',
+                    border: `1px solid ${currentTheme.border}`,
                     borderRadius: '4px',
-                    backgroundColor: 'white',
-                    color: '#374151',
+                    backgroundColor: currentTheme.cardBackground,
+                    color: currentTheme.textPrimary,
                     cursor: 'pointer',
                     fontSize: '1rem'
                   }}
@@ -1538,7 +1547,7 @@ function Dash() {
                     padding: '0.75rem 1.5rem',
                     border: 'none',
                     borderRadius: '4px',
-                    backgroundColor: isSubmitting ? '#9ca3af' : '#3b82f6',
+                    backgroundColor: isSubmitting ? currentTheme.textMuted : currentTheme.buttonPrimary,
                     color: 'white',
                     cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     fontSize: '1rem'
