@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin - VixPlay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .output {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .admin-true { color: green; font-weight: bold; }
+        .admin-false { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Admin - VixPlay</h1>
+        
+        <div class="section">
+            <h3>📋 Status Atual do localStorage</h3>
+            <button onclick="checkStorage()">Verificar localStorage</button>
+            <button onclick="clearStorage()">Limpar localStorage</button>
+            <div id="storage-output" class="output"></div>
+        </div>
+
+        <div class="section">
+            <h3>👤 Simular Login Admin</h3>
+            <button onclick="simulateAdminLogin()">Simular vitor@gmail.com como Admin</button>
+            <button onclick="simulateRegularLogin()">Simular usuário regular</button>
+            <div id="login-output" class="output"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔗 Links Úteis</h3>
+            <button onclick="goToApp()">Ir para Aplicação</button>
+            <button onclick="goToLogin()">Ir para Login</button>
+            <button onclick="goToAdmin()">Tentar Acessar Admin</button>
+        </div>
+    </div>
+
+    <script>
+        function checkStorage() {
+            const token = localStorage.getItem('vixplay_token');
+            const user = localStorage.getItem('vixplay_user');
+            
+            let output = '=== DADOS DO LOCALSTORAGE ===\n\n';
+            output += `Token: ${token ? 'Presente' : 'Ausente'}\n`;
+            output += `User Data: ${user ? 'Presente' : 'Ausente'}\n\n`;
+            
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    output += '=== DADOS DO USUÁRIO ===\n';
+                    output += `Nome: ${userData.name || 'N/A'}\n`;
+                    output += `Email: ${userData.email || 'N/A'}\n`;
+                    output += `isAdmin: ${userData.isAdmin} (tipo: ${typeof userData.isAdmin})\n`;
+                    output += `isAdmin === true: ${userData.isAdmin === true}\n`;
+                    output += `isAdmin == true: ${userData.isAdmin == true}\n\n`;
+                    output += '=== OBJETO COMPLETO ===\n';
+                    output += JSON.stringify(userData, null, 2);
+                } catch (e) {
+                    output += `Erro ao parsear dados do usuário: ${e.message}`;
+                }
+            }
+            
+            document.getElementById('storage-output').innerHTML = output;
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('vixplay_token');
+            localStorage.removeItem('vixplay_user');
+            document.getElementById('storage-output').innerHTML = 'localStorage limpo!';
+        }
+
+        function simulateAdminLogin() {
+            const adminUser = {
+                name: 'Vitor Admin',
+                email: 'vitor@gmail.com',
+                isAdmin: true
+            };
+            const token = 'fake-admin-token-' + Date.now();
+            
+            localStorage.setItem('vixplay_token', token);
+            localStorage.setItem('vixplay_user', JSON.stringify(adminUser));
+            
+            document.getElementById('login-output').innerHTML = 
+                'Usuário admin simulado salvo no localStorage!\n' +
+                JSON.stringify(adminUser, null, 2);
+        }
+
+        function simulateRegularLogin() {
+            const regularUser = {
+                name: 'Usuário Regular',
+                email: 'user@test.com',
+                isAdmin: false
+            };
+            const token = 'fake-user-token-' + Date.now();
+            
+            localStorage.setItem('vixplay_token', token);
+            localStorage.setItem('vixplay_user', JSON.stringify(regularUser));
+            
+            document.getElementById('login-output').innerHTML = 
+                'Usuário regular simulado salvo no localStorage!\n' +
+                JSON.stringify(regularUser, null, 2);
+        }
+
+        function goToApp() {
+            window.location.href = 'http://localhost:5174';
+        }
+
+        function goToLogin() {
+            window.location.href = 'http://localhost:5174/login';
+        }
+
+        function goToAdmin() {
+            window.location.href = 'http://localhost:5174/admin';
+        }
+
+        // Verificar automaticamente ao carregar
+        window.onload = function() {
+            checkStorage();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vix Mídia - Mídias Globais</title>
+  <!-- Favicon -->
+  <link rel="icon" href="../img/vix_icon.png" type="image/png">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="modern-dashboard.css">
+  <style>
+    .media-card {
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      height: 100%;
+    }
+    .media-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .media-preview {
+      height: 200px;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .media-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .media-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .category-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+    .filter-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .media-modal-content {
+      max-width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+    }
+    .media-modal-video {
+      width: 100%;
+      max-height: 60vh;
+    }
+    .media-info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .media-info-item:last-child {
+      border-bottom: none;
+    }
+    .date-info {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+    .expired-badge {
+      background-color: #dc3545 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay d-lg-none"></div>
+
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar d-none d-lg-block" id="sidebar">
+      <div class="sidebar-header">
+        <img src="../img/vixplay1.png" alt="Logo VixMídia" class="img-fluid">
+      </div>
+
+      <ul class="list-unstyled">
+        <li>
+          <a class="sidebar-link" href="index.html">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="dispositivos.html">
+            <i class="bi bi-tv"></i>
+            <span>Dispositivos</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="panels.html">
+            <i class="bi bi-pip-fill"></i>
+            <span>Painéis</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="midias.html">
+            <i class="bi bi-collection-play"></i>
+            <span>Minhas Mídias</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link active" href="midias_globais.html">
+            <i class="bi bi-repeat"></i>
+            <span>Mídias Globais</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="clients.html">
+            <i class="bi bi-person-video2"></i>
+            <span>Clientes</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="campaigns.html">
+            <i class="bi bi-megaphone"></i>
+            <span>Campanhas</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="relatorios.html">
+            <i class="bi bi-clipboard2-pulse"></i>
+            <span>Relatórios</span>
+          </a>
+        </li>
+        <li id="adminMenuItem" style="display: none;">
+          <a class="sidebar-link" href="admin.html">
+            <i class="bi bi-shield-check"></i>
+            <span>Administração</span>
+          </a>
+        </li>
+        <li id="adminGlobalMediaMenuItem" style="display: none;">
+          <a class="sidebar-link" href="midias_globais_admin.html">
+            <i class="bi bi-gear-fill"></i>
+            <span>Gerenciar Mídias Globais</span>
+          </a>
+        </li>
+      </ul>
+
+      <hr>
+
+      <ul class="list-unstyled">
+        <li>
+          <a class="sidebar-link" href="configuracoes.html">
+            <i class="bi bi-gear"></i>
+            <span>Configurações</span>
+          </a>
+        </li>
+        <li>
+          <a class="sidebar-link" href="#" id="logoutBtnSidebar">
+            <i class="bi bi-box-arrow-left"></i>
+            <span>Sair</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Mobile menu toggle button -->
+      <button class="btn btn-primary d-lg-none position-fixed" style="bottom: 20px; right: 20px; z-index: 1030;"
+        onclick="document.getElementById('sidebar').classList.toggle('d-none')">
+        <i class="bi bi-list"></i>
+      </button>
+
+      <!-- Informações do usuário -->
+      <div class="sidebar-footer mt-auto">
+        <div class="d-flex align-items-center mb-3">
+          <div class="sidebar-user-icon me-2">
+            <i class="bi bi-person-circle text-white" style="font-size: 1.5rem;"></i>
+          </div>
+          <div class="sidebar-user-info">
+            <span id="userName" class="text-white">Usuário</span>
+          </div>
+        </div>
+        <!-- Toggle de tema claro/escuro -->
+        <div class="px-0 py-2">
+          <div class="form-check form-switch d-flex align-items-center">
+            <input class="form-check-input me-2" type="checkbox" id="themeToggle">
+            <label class="form-check-label text-white" for="themeToggle">
+              <i class="bi bi-moon"></i>
+              <span class="ms-2">Modo Escuro</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="content">
+      <!-- Cabeçalho da Página -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Mídias Globais</h1>
+          <p class="page-subtitle">Explore e associe mídias globais aos seus painéis</p>
+        </div>
+        <div class="d-flex align-items-center">
+          <!-- Botão de atualizar -->
+          <button class="btn btn-primary me-2" id="refreshMedias">
+            <i class="bi bi-arrow-clockwise me-2"></i> Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Alertas -->
+      <div class="alert-container" id="alertContainer"></div>
+
+      <!-- Seção de Filtros -->
+      <div class="filter-section">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label for="categoryFilter" class="form-label">Categoria</label>
+            <select class="form-select" id="categoryFilter">
+              <option value="">Todas as categorias</option>
+              <option value="MES_SAZONAL">Mês Sazonal</option>
+              <option value="NOTICIAS_LOCAIS">Notícias Locais</option>
+              <option value="ESPORTES">Esportes</option>
+              <option value="DICAS">Dicas</option>
+              <option value="CURIOSIDADES">Curiosidades</option>
+              <option value="QUIZ">Quiz</option>
+              <option value="VOCE_SABIA">Você Sabia?</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="typeFilter" class="form-label">Tipo</label>
+            <select class="form-select" id="typeFilter">
+              <option value="">Todos os tipos</option>
+              <option value="PHOTO">Foto</option>
+              <option value="VIDEO">Vídeo</option>
+              <option value="RSS">RSS</option>
+              <option value="WEATHER">Clima</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="searchFilter" class="form-label">Buscar</label>
+            <input type="text" class="form-control" id="searchFilter" placeholder="Buscar por título ou descrição...">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-outline-secondary w-100" id="clearFilters">
+              <i class="bi bi-x-circle me-1"></i> Limpar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de Mídias Globais -->
+      <div class="row" id="mediasContainer">
+        <!-- Mídias serão carregadas aqui -->
+      </div>
+
+      <!-- Mensagem quando não há mídias -->
+      <div class="text-center py-5" id="noMediasMessage" style="display: none;">
+        <i class="bi bi-collection text-muted" style="font-size: 4rem;"></i>
+        <h4 class="text-muted mt-3">Nenhuma mídia global encontrada</h4>
+        <p class="text-muted">Não há mídias globais disponíveis no momento.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal para Associar Mídia ao Painel -->
+  <div class="modal fade" id="associateModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-link-45deg me-2"></i>Associar Mídia ao Painel
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="panelSelect" class="form-label">Selecione o Painel</label>
+            <select class="form-select" id="panelSelect" required>
+              <option value="">Carregando painéis...</option>
+            </select>
+          </div>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong id="selectedMediaTitle"></strong> será associada ao painel selecionado. <br>Após a data de expiração da midia, a mesma sumirá de seus paineis.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="confirmAssociate">
+            <i class="bi bi-check-circle me-2"></i>Associar Mídia
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Visualizar Mídia -->
+  <div class="modal fade" id="mediaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="mediaModalTitle">
+            <i class="bi bi-play-circle me-2"></i>Visualizar Mídia
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div id="mediaModalContent">
+            <!-- Conteúdo da mídia será inserido aqui -->
+          </div>
+          <div class="mt-3" id="mediaModalInfo">
+            <!-- Informações da mídia serão inseridas aqui -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="associateFromModal">
+            <i class="bi bi-plus-circle me-2"></i>Associar ao Painel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Config.js - Variáveis de Ambiente -->
+  <script src="../js/config.js"></script>
+  <script>
+    console.log('🔥 Página carregada!');
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const isAdmin = userData.isAdmin || false;
+    console.log('🔥 Token encontrado:', !!token);
+    console.log('🔥 User data:', userData);
+    
+    // Teste simples de requisição
+    setTimeout(() => {
+      console.log('🔥 Fazendo teste de requisição...');
+      fetch('http://localhost:4000/private/panels', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        console.log('🔥 Teste - Status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('🔥 Teste - Dados:', data);
+      })
+      .catch(error => {
+        console.error('🔥 Teste - Erro:', error);
+      });
+    }, 2000);
+
+    if (!token) {
+      window.location.href = "/";
+    }
+
+    // Mostrar menu de administração se for admin
+    if (isAdmin) {
+      document.getElementById('adminMenuItem').style.display = 'block';
+      document.getElementById('adminGlobalMediaMenuItem').style.display = 'block';
+    }
+
+    let currentMedias = [];
+    let selectedMediaId = null;
+    let currentModalMedia = null;
+    const associateModal = new bootstrap.Modal(document.getElementById('associateModal'));
+    const mediaModal = new bootstrap.Modal(document.getElementById('mediaModal'));
+
+    // Função para construir URL da API (usando a função global do config.js)
+    // A função buildApiUrl já está disponível globalmente via config.js
+
+    // Função para mostrar alertas
+    function showAlert(message, type = 'info') {
+      const alertContainer = document.getElementById('alertContainer');
+      const alertId = 'alert-' + Date.now();
+      
+      const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" id="${alertId}" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `;
+      
+      alertContainer.insertAdjacentHTML('beforeend', alertHtml);
+      
+      // Auto-remover após 5 segundos
+      setTimeout(() => {
+        const alert = document.getElementById(alertId);
+        if (alert) {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }
+      }, 5000);
+    }
+
+    // Carregar mídias globais
+    async function loadGlobalMedias() {
+      try {
+        console.log('Iniciando carregamento de mídias globais...');
+        console.log('Token:', token ? 'Presente' : 'Ausente');
+        console.log('URL da API:', buildApiUrl('/private/available-global-medias'));
+        
+        const response = await fetch(buildApiUrl('/private/available-global-medias'), {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Status da resposta:', response.status);
+        console.log('Response OK:', response.ok);
+
+        if (response.ok) {
+          currentMedias = await response.json();
+          console.log('Mídias carregadas:', currentMedias.length, currentMedias);
+          renderMedias(currentMedias);
+        } else {
+          const errorText = await response.text();
+          console.error('Erro na resposta:', response.status, errorText);
+          showAlert(`Erro ao carregar mídias globais: ${response.status}`, 'danger');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar mídias globais:', error);
+        showAlert('Erro ao carregar mídias globais', 'danger');
+      }
+    }
+
+    // Renderizar mídias
+    function renderMedias(medias) {
+      const container = document.getElementById('mediasContainer');
+      const noMediasMessage = document.getElementById('noMediasMessage');
+
+      if (medias.length === 0) {
+        container.innerHTML = '';
+        noMediasMessage.style.display = 'block';
+        return;
+      }
+
+      noMediasMessage.style.display = 'none';
+
+      const categoryLabels = {
+        'MES_SAZONAL': 'Mês Sazonal',
+        'NOTICIAS_LOCAIS': 'Notícias Locais',
+        'ESPORTES': 'Esportes',
+        'DICAS': 'Dicas',
+        'CURIOSIDADES': 'Curiosidades',
+        'QUIZ': 'Quiz',
+        'VOCE_SABIA': 'Você Sabia?'
+      };
+
+      const categoryColors = {
+        'MES_SAZONAL': 'bg-primary',
+        'NOTICIAS_LOCAIS': 'bg-info',
+        'ESPORTES': 'bg-success',
+        'DICAS': 'bg-warning',
+        'CURIOSIDADES': 'bg-secondary',
+        'QUIZ': 'bg-danger',
+        'VOCE_SABIA': 'bg-dark'
+      };
+
+      container.innerHTML = medias.map(media => {
+        const categoryLabel = categoryLabels[media.category] || media.category;
+        const categoryColor = categoryColors[media.category] || 'bg-secondary';
+        
+        // Formatação de datas
+        const formatDate = (dateString) => {
+          if (!dateString) return 'N/A';
+          const date = new Date(dateString);
+          return date.toLocaleDateString('pt-BR');
+        };
+
+        const isExpired = media.dateExpire && new Date(media.dateExpire) < new Date();
+        const createdDate = formatDate(media.createdAt);
+        const expireDate = formatDate(media.dateExpire);
+
+        let preview = '';
+        if (media.type === 'PHOTO') {
+          preview = `<img src="${media.url}" alt="${media.title}" onclick="openMediaModal(${media.id})" style="cursor: pointer;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                     <div style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6c757d; cursor: pointer;" onclick="openMediaModal(${media.id})">
+                       <i class="bi bi-image" style="font-size: 3rem;"></i>
+                       <small>Imagem</small>
+                     </div>`;
+        } else if (media.type === 'VIDEO') {
+          preview = `<video src="${media.url}" muted preload="metadata" onclick="openMediaModal(${media.id})" style="cursor: pointer;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                     </video>
+                     <div style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6c757d; cursor: pointer;" onclick="openMediaModal(${media.id})">
+                       <i class="bi bi-play-circle" style="font-size: 3rem;"></i>
+                       <small>Vídeo</small>
+                     </div>`;
+        } else {
+          const iconMap = {
+            'RSS': 'bi-rss',
+            'WEATHER': 'bi-cloud-sun'
+          };
+          const icon = iconMap[media.type] || 'bi-file-earmark';
+          preview = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6c757d; cursor: pointer;" onclick="openMediaModal(${media.id})">
+                       <i class="bi ${icon}" style="font-size: 3rem;"></i>
+                       <small>${media.type}</small>
+                     </div>`;
+        }
+
+        return `
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card media-card h-100">
+              <div class="media-preview">
+                ${preview}
+              </div>
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="card-title mb-0">${media.title}</h6>
+                  <span class="badge ${isExpired ? 'expired-badge' : categoryColor} category-badge">
+                    ${isExpired ? 'EXPIRADA' : categoryLabel}
+                  </span>
+                </div>
+                <p class="card-text text-muted small flex-grow-1">${media.description || 'Sem descrição'}</p>
+                
+                <!-- Informações de data -->
+                <div class="date-info mb-2">
+                  <div class="d-flex justify-content-between">
+                    <span><i class="bi bi-calendar-plus me-1"></i>Criada: ${createdDate}</span>
+                    <span><i class="bi bi-calendar-x me-1"></i>Expira: ${expireDate}</span>
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <small class="text-muted">
+                    <i class="bi bi-clock me-1"></i>${media.duration || 'N/A'}s
+                  </small>
+                  <button class="btn btn-primary btn-sm" onclick="openAssociateModal(${media.id}, '${media.title}')" ${isExpired ? 'disabled' : ''}>
+                    <i class="bi bi-plus-circle me-1"></i>Associar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Abrir modal de associação
+    function openAssociateModal(mediaId, mediaTitle) {
+      selectedMediaId = mediaId;
+      document.getElementById('selectedMediaTitle').textContent = mediaTitle;
+      loadUserPanels();
+      associateModal.show();
+    }
+
+    // Abrir modal de visualização de mídia
+    function openMediaModal(mediaId) {
+      const media = currentMedias.find(m => m.id === mediaId);
+      if (!media) return;
+
+      currentModalMedia = media;
+      
+      // Atualizar título do modal
+      document.getElementById('mediaModalTitle').innerHTML = `
+        <i class="bi bi-${media.type === 'VIDEO' ? 'play-circle' : media.type === 'PHOTO' ? 'image' : 'file-earmark'} me-2"></i>${media.title}
+      `;
+
+      // Formatação de datas
+      const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
+
+      const isExpired = media.dateExpire && new Date(media.dateExpire) < new Date();
+      const createdDate = formatDate(media.createdAt);
+      const expireDate = formatDate(media.dateExpire);
+
+      // Renderizar conteúdo da mídia
+      let mediaContent = '';
+      if (media.type === 'VIDEO') {
+        mediaContent = `
+          <video class="media-modal-video" controls autoplay>
+            <source src="${media.url}" type="video/mp4">
+            <source src="${media.url}" type="video/avi">
+            <source src="${media.url}" type="video/mov">
+            Seu navegador não suporta a reprodução de vídeo.
+          </video>
+        `;
+      } else if (media.type === 'PHOTO') {
+        mediaContent = `
+          <img src="${media.url}" alt="${media.title}" class="media-modal-content" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+          <div style="display: none; padding: 2rem; color: #6c757d;">
+            <i class="bi bi-exclamation-triangle" style="font-size: 3rem;"></i>
+            <p class="mt-2">Erro ao carregar a imagem</p>
+          </div>
+        `;
+      } else {
+        const iconMap = {
+          'RSS': 'bi-rss',
+          'WEATHER': 'bi-cloud-sun'
+        };
+        const icon = iconMap[media.type] || 'bi-file-earmark';
+        mediaContent = `
+          <div style="padding: 3rem; color: #6c757d;">
+            <i class="bi ${icon}" style="font-size: 5rem;"></i>
+            <h4 class="mt-3">${media.type}</h4>
+            <p>Este tipo de mídia não pode ser visualizado diretamente.</p>
+            <a href="${media.url}" target="_blank" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-up-right me-2"></i>Abrir Link
+            </a>
+          </div>
+        `;
+      }
+
+      document.getElementById('mediaModalContent').innerHTML = mediaContent;
+
+      // Renderizar informações da mídia
+      const categoryLabels = {
+        'MES_SAZONAL': 'Mês Sazonal',
+        'NOTICIAS_LOCAIS': 'Notícias Locais',
+        'ESPORTES': 'Esportes',
+        'DICAS': 'Dicas',
+        'CURIOSIDADES': 'Curiosidades',
+        'QUIZ': 'Quiz',
+        'VOCE_SABIA': 'Você Sabia?'
+      };
+
+      const categoryLabel = categoryLabels[media.category] || media.category;
+      
+      document.getElementById('mediaModalInfo').innerHTML = `
+        <div class="text-start">
+          <div class="media-info-item">
+            <strong>Descrição:</strong>
+            <span>${media.description || 'Sem descrição'}</span>
+          </div>
+          <div class="media-info-item">
+            <strong>Categoria:</strong>
+            <span class="badge ${isExpired ? 'bg-danger' : 'bg-primary'}">${isExpired ? 'EXPIRADA' : categoryLabel}</span>
+          </div>
+          <div class="media-info-item">
+            <strong>Tipo:</strong>
+            <span>${media.type}</span>
+          </div>
+          <div class="media-info-item">
+            <strong>Duração:</strong>
+            <span>${media.duration || 'N/A'} segundos</span>
+          </div>
+          <div class="media-info-item">
+            <strong>Data de Criação:</strong>
+            <span>${createdDate}</span>
+          </div>
+          <div class="media-info-item">
+            <strong>Data de Expiração:</strong>
+            <span>${expireDate}</span>
+          </div>
+          ${isExpired ? '<div class="alert alert-danger mt-2"><i class="bi bi-exclamation-triangle me-2"></i>Esta mídia está expirada e não pode ser associada a painéis.</div>' : ''}
+        </div>
+      `;
+
+      // Configurar botão de associação
+      const associateBtn = document.getElementById('associateFromModal');
+      if (isExpired) {
+        associateBtn.disabled = true;
+        associateBtn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Mídia Expirada';
+      } else {
+        associateBtn.disabled = false;
+        associateBtn.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Associar ao Painel';
+      }
+
+      mediaModal.show();
+    }
+
+    // Carregar painéis do usuário
+    async function loadUserPanels() {
+      try {
+        console.log('🔥 Carregando painéis do usuário...');
+        const url = buildApiUrl('/private/panels');
+        console.log('🔥 URL dos painéis:', url);
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log('🔥 Response dos painéis:', response.status);
+
+        if (response.ok) {
+          const panels = await response.json();
+          const select = document.getElementById('panelSelect');
+          
+          if (panels.length === 0) {
+            select.innerHTML = '<option value="">Nenhum painel encontrado</option>';
+            return;
+          }
+
+          select.innerHTML = '<option value="">Selecione um painel</option>' +
+            panels.map(panel => `<option value="${panel.id}">${panel.name}</option>`).join('');
+        } else {
+          showAlert('Erro ao carregar painéis', 'danger');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar painéis:', error);
+        showAlert('Erro ao carregar painéis', 'danger');
+      }
+    }
+
+    // Associar mídia ao painel
+    async function associateMediaToPanel() {
+      const panelId = document.getElementById('panelSelect').value;
+      console.log('🔥 Função associateMediaToPanel chamada!');
+      console.log('🔥 Dados:', { panelId, selectedMediaId });
+
+      if (!panelId) {
+        showAlert('Selecione um painel', 'warning');
+        return;
+      }
+
+      try {
+        const url = buildApiUrl(`/private/panels/${panelId}/associate-global-media`);
+        const requestData = { globalMediaId: selectedMediaId };
+        
+        console.log('🔥 URL da requisição:', url);
+        console.log('🔥 Dados da requisição:', requestData);
+        console.log('🔥 Token:', token);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        console.log('🔥 Status da resposta:', response.status);
+        console.log('🔥 Response object:', response);
+
+        if (response.ok) {
+          showAlert('Mídia global associada ao painel com sucesso!', 'success');
+          associateModal.hide();
+          // Limpar formulário
+          document.getElementById('panelSelect').value = '';
+        } else {
+          const error = await response.json();
+          showAlert(error.error || 'Erro ao associar mídia ao painel', 'danger');
+        }
+      } catch (error) {
+        console.error('Erro ao associar mídia:', error);
+        showAlert('Erro ao associar mídia ao painel', 'danger');
+      }
+    }
+
+    // Filtrar mídias
+    function filterMedias() {
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      const typeFilter = document.getElementById('typeFilter').value;
+      const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+      const filteredMedias = currentMedias.filter(media => {
+        const matchesCategory = !categoryFilter || media.category === categoryFilter;
+        const matchesType = !typeFilter || media.type === typeFilter;
+        const matchesSearch = !searchFilter || 
+          media.title.toLowerCase().includes(searchFilter) ||
+          (media.description && media.description.toLowerCase().includes(searchFilter));
+
+        return matchesCategory && matchesType && matchesSearch;
+      });
+
+      renderMedias(filteredMedias);
+    }
+
+    // Event Listeners
+    document.getElementById('refreshMedias').addEventListener('click', loadGlobalMedias);
+    document.getElementById('confirmAssociate').addEventListener('click', associateMediaToPanel);
+    document.getElementById('associateFromModal').addEventListener('click', () => {
+      if (currentModalMedia) {
+        mediaModal.hide();
+        openAssociateModal(currentModalMedia.id, currentModalMedia.title);
+      }
+    });
+    document.getElementById('categoryFilter').addEventListener('change', filterMedias);
+    document.getElementById('typeFilter').addEventListener('change', filterMedias);
+    document.getElementById('searchFilter').addEventListener('input', filterMedias);
+    
+    // Pausar vídeo quando modal for fechado
+    document.getElementById('mediaModal').addEventListener('hidden.bs.modal', () => {
+      const video = document.querySelector('#mediaModalContent video');
+      if (video) {
+        video.pause();
+      }
+    });
+    
+    document.getElementById('clearFilters').addEventListener('click', () => {
+      document.getElementById('categoryFilter').value = '';
+      document.getElementById('typeFilter').value = '';
+      document.getElementById('searchFilter').value = '';
+      renderMedias(currentMedias);
+    });
+
+    // Carregar mídias ao inicializar
+    loadGlobalMedias();
+    
+    // ===== FUNÇÕES DE USUÁRIO =====
+    function updateUserLogo(avatarUrl) {
+      const logoImg = document.querySelector('.sidebar-header img');
+      if (logoImg) {
+        // Se há avatar personalizado, usa ele; senão usa a logo padrão
+        logoImg.src = avatarUrl || '../img/vixplay1.png';
+        logoImg.style.width = '100px';
+        logoImg.style.height = 'auto';
+        logoImg.style.objectFit = 'contain';
+        logoImg.style.display = 'block';
+        logoImg.style.margin = '0 auto';
+      }
+    }
+    
+    async function loadUserData() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/private/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          
+          // Atualizar nome no modal e sidebar
+          document.getElementById('userNameModal').textContent = userData.name || 'Usuário';
+          document.getElementById('userEmailModal').textContent = userData.email || 'email@exemplo.com';
+          document.getElementById('userName').textContent = userData.name || 'Usuário';
+          
+          // Atualizar avatar se existir
+          if (userData.picture) {
+            const fullAvatarUrl = userData.picture.startsWith('http') ? userData.picture : `${API_BASE_URL}${userData.picture}`;
+            updateUserLogo(fullAvatarUrl);
+          } else {
+            updateUserLogo(null);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+      }
+    }
+    
+    // Carregar dados do usuário na inicialização
+    loadUserData();
+  </script>
+</body>
+
+</html>

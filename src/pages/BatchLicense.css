@@ -1,0 +1,136 @@
+/* Estilos escopados para a página de Licenças em Lote */
+.batch-license-page {
+  padding: 20px;
+}
+
+/* Card */
+.batch-license-page .card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border-radius: 8px;
+  background-color: #fff;
+}
+.batch-license-page .card-body {
+  padding: 1.25rem;
+}
+
+/* Botões básicos e variantes usadas */
+.batch-license-page .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.batch-license-page .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.batch-license-page .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+.batch-license-page .btn-outline-secondary {
+  background-color: transparent;
+  border-color: #6c757d;
+  color: #6c757d;
+}
+.batch-license-page .btn-outline-primary {
+  background-color: transparent;
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+.batch-license-page .btn-outline-success {
+  background-color: transparent;
+  border-color: #198754;
+  color: #198754;
+}
+.batch-license-page .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+  color: #fff;
+}
+
+/* Grid utilitário leve */
+.batch-license-page .row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+.batch-license-page .g-3 { gap: 1rem; }
+.batch-license-page .col-md-4 { grid-column: span 4; }
+.batch-license-page .col-md-6 { grid-column: span 6; }
+
+/* Helpers */
+.batch-license-page .d-flex { display: flex; }
+.batch-license-page .justify-content-between { justify-content: space-between; }
+.batch-license-page .align-items-center { align-items: center; }
+.batch-license-page .btn-group { display: inline-flex; gap: 0.25rem; }
+.batch-license-page .mb-0 { margin-bottom: 0; }
+.batch-license-page .mb-3 { margin-bottom: 1rem; }
+.batch-license-page .mt-2 { margin-top: 0.5rem; }
+.batch-license-page .mt-3 { margin-top: 1rem; }
+.batch-license-page .ms-2 { margin-left: 0.5rem; }
+.batch-license-page .text-center { text-align: center; }
+.batch-license-page .text-muted { color: #6b7280; }
+
+/* Formulários */
+.batch-license-page .form-label { font-weight: 500; color: #374151; }
+.batch-license-page .form-control,
+.batch-license-page .form-select,
+.batch-license-page textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  color: #111827;
+}
+.batch-license-page .form-check { display: flex; align-items: center; }
+.batch-license-page .form-check-input { width: 1rem; height: 1rem; }
+.batch-license-page .form-check-label { margin-left: 0.5rem; }
+
+/* Modal */
+.batch-license-page .modal-content {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border-radius: 8px;
+}
+.batch-license-page .modal-header,
+.batch-license-page .modal-footer {
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+.batch-license-page .modal-footer { border-top: 1px solid #e5e7eb; border-bottom: none; }
+.batch-license-page .modal-title { font-size: 1rem; font-weight: 600; }
+
+/* Alertas */
+.batch-license-page .alert {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+}
+.batch-license-page .alert-info { background-color: #eef2ff; color: #1e3a8a; }
+.batch-license-page .alert-danger { background-color: #fee2e2; color: #991b1b; }
+.batch-license-page .alert-success { background-color: #dcfce7; color: #166534; }
+
+/* Tabela */
+.batch-license-page .table { width: 100%; border-collapse: collapse; }
+.batch-license-page .table th,
+.batch-license-page .table td {
+  border-top: none;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.625rem 0.75rem;
+  vertical-align: middle;
+}
+.batch-license-page .table th { font-weight: 600; color: #374151; background-color: #f9fafb; }
+.batch-license-page .table-hover tbody tr:hover { background-color: #f3f4f6; }
+
+/* Lista */
+.batch-license-page .list-group { list-style: none; padding: 0; margin: 0; }
+.batch-license-page .list-group-item { border: 1px solid #e5e7eb; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; background-color: #fff; }

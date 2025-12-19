@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mídias Globais - VixMidia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .table {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .badge {
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+        }
+        .category-badge {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .media-preview {
+            max-width: 300px;
+            max-height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-play-circle me-2"></i>VixMidia
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.html">Administração</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dispositivos.html">Dispositivos</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="panels.html">Painéis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="midias_globais.html">Mídias Globais</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">Sair</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">
+                        <i class="bi bi-globe me-3"></i>Mídias Globais
+                    </h1>
+                    <p class="mb-0 mt-2">Gerencie mídias que podem ser associadas a qualquer painel</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-light btn-lg" onclick="abrirModalCriar()">
+                        <i class="bi bi-plus-circle me-2"></i>Nova Mídia Global
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Filtros -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label">Filtrar por Categoria:</label>
+                        <select class="form-select" id="filtroCategoria" onchange="filtrarMidias()">
+                            <option value="">Todas as Categorias</option>
+                            <option value="MES_SAZONAL">Mês Sazonal</option>
+                            <option value="NOTICIAS_LOCAIS">Notícias Locais</option>
+                            <option value="ESPORTES">Esportes</option>
+                            <option value="DICAS">Dicas</option>
+                            <option value="CURIOSIDADES">Curiosidades</option>
+                            <option value="QUIZ">Quiz</option>
+                            <option value="VOCE_SABIA">Você Sabia?</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Filtrar por Tipo:</label>
+                        <select class="form-select" id="filtroTipo" onchange="filtrarMidias()">
+                            <option value="">Todos os Tipos</option>
+                            <option value="PHOTO">Foto</option>
+                            <option value="VIDEO">Vídeo</option>
+                            <option value="RSS">RSS</option>
+                            <option value="WEATHER">Clima</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Buscar:</label>
+                        <input type="text" class="form-control" id="buscarMidia" placeholder="Digite o título..." onkeyup="filtrarMidias()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Mídias -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Lista de Mídias Globais</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Preview</th>
+                                <th>Título</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Duração</th>
+                                <th>Status</th>
+                                <th>Expira em</th>
+                                <th>Criado em</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="midiasTableBody">
+                            <!-- Conteúdo será carregado via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loadingSpinner" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+                <div id="emptyState" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h4 class="text-muted mt-3">Nenhuma mídia global encontrada</h4>
+                    <p class="text-muted">Clique em "Nova Mídia Global" para começar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Criar/Editar Mídia -->
+    <div class="modal fade" id="midiaModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="midiaModalTitle">Nova Mídia Global</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="midiaForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="midiaId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Título *</label>
+                                    <input type="text" class="form-control" id="midiaTitle" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Categoria *</label>
+                                    <select class="form-select" id="midiaCategory" required>
+                                        <option value="">Selecione uma categoria</option>
+                                        <option value="MES_SAZONAL">Mês Sazonal</option>
+                                        <option value="NOTICIAS_LOCAIS">Notícias Locais</option>
+                                        <option value="ESPORTES">Esportes</option>
+                                        <option value="DICAS">Dicas</option>
+                                        <option value="CURIOSIDADES">Curiosidades</option>
+                                        <option value="QUIZ">Quiz</option>
+                                        <option value="VOCE_SABIA">Você Sabia?</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo *</label>
+                                    <select class="form-select" id="midiaType" required>
+                                        <option value="">Selecione um tipo</option>
+                                        <option value="PHOTO">Foto</option>
+                                        <option value="VIDEO">Vídeo</option>
+                                        <option value="RSS">RSS</option>
+                                        <option value="WEATHER">Clima</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Duração (segundos)</label>
+                                    <input type="number" class="form-control" id="midiaDuration" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Abas para escolher entre Upload e URL -->
+                        <ul class="nav nav-tabs mb-3" id="mediaSourceTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="upload-tab" data-bs-toggle="tab"
+                                    data-bs-target="#upload" type="button" role="tab">
+                                    <i class="bi bi-cloud-upload"></i> Upload de Arquivo
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="url-tab" data-bs-toggle="tab"
+                                    data-bs-target="#url" type="button" role="tab">
+                                    <i class="bi bi-link-45deg"></i> URL Externa
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="mediaSourceTabContent">
+                            <!-- Aba Upload -->
+                            <div class="tab-pane fade show active" id="upload" role="tabpanel">
+                                <div class="mb-3">
+                                    <label for="fileInput" class="form-label">Arquivo de Mídia *</label>
+                                    <input type="file" class="form-control" id="fileInput"
+                                        accept="image/*,video/*" onchange="previewUploadFile()">
+                                    <div class="form-text">Formatos aceitos: Imagens (JPG, PNG, GIF) e Vídeos (MP4, AVI, MOV)</div>
+                                </div>
+                                <div class="mb-3" id="uploadPreviewContainer" style="display: none;">
+                                    <label class="form-label">Preview</label>
+                                    <div id="uploadPreview" class="border rounded p-3 bg-light"></div>
+                                </div>
+                                <div class="progress mb-3" id="uploadProgress" style="display: none;">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Aba URL -->
+                            <div class="tab-pane fade" id="url" role="tabpanel">
+                                <div class="mb-3">
+                                    <label class="form-label">URL *</label>
+                                    <input type="url" class="form-control" id="midiaUrl">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea class="form-control" id="midiaDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Data de Expiração</label>
+                            <input type="datetime-local" class="form-control" id="midiaDateExpire">
+                            <div class="form-text">Deixe em branco se a mídia não deve expirar</div>
+                        </div>
+                        <div class="alert alert-info mt-2" role="alert">
+                                    <i class="bi bi-info-circle"></i>
+                                    Após essa data, esta midia desaparecerá de todos os paineis onde ela estiver associado.
+                                </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="midiaActive" checked>
+                                <label class="form-check-label" for="midiaActive">
+                                    Mídia ativa
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="salvarBtn">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Exclusão -->
+    <div class="modal fade" id="confirmarExclusaoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir esta mídia global?</p>
+                    <p class="text-danger"><strong>Esta ação não pode ser desfeita!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmarExclusaoBtn">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes da Mídia -->
+    <div class="modal fade" id="detalhesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalhes da Mídia Global</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detalhesContent">
+                        <!-- Conteúdo será carregado dinamicamente -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script>
+        // Variáveis globais
+        let midias = [];
+        let midiasFiltradas = [];
+        let midiaParaExcluir = null;
+        const token = localStorage.getItem('token');
+
+        // Verificar autenticação e permissões
+        async function checkAdminAccess() {
+            if (!token) {
+                window.location.href = '../login';
+                return;
+            }
+
+            try {
+                const response = await fetch(buildApiUrl('/private/profile'), {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    
+                    if (!user.isAdmin) {
+                        alert('Acesso negado. Apenas administradores podem acessar esta página.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    // Usuário é admin, carregar dados
+                    carregarMidias();
+                } else {
+                    window.location.href = '../login';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar permissões:', error);
+                window.location.href = '../login';
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
+        });
+
+        // Carregar mídias
+        async function carregarMidias() {
+            try {
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('emptyState').style.display = 'none';
+
+                const response = await fetch(`${buildApiUrl('/private/global-medias')}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    midias = await response.json();
+                    midiasFiltradas = [...midias];
+                    renderizarTabela();
+                } else {
+                    throw new Error('Erro ao carregar mídias');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao carregar mídias globais', 'danger');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        // Renderizar tabela
+        function renderizarTabela() {
+            const tbody = document.getElementById('midiasTableBody');
+            
+            if (midiasFiltradas.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                tbody.innerHTML = '';
+                return;
+            }
+
+            document.getElementById('emptyState').style.display = 'none';
+            
+            tbody.innerHTML = midiasFiltradas.map(midia => {
+                const categoryLabels = {
+                    'MES_SAZONAL': 'Mês Sazonal',
+                    'NOTICIAS_LOCAIS': 'Notícias Locais',
+                    'ESPORTES': 'Esportes',
+                    'DICAS': 'Dicas',
+                    'CURIOSIDADES': 'Curiosidades',
+                    'QUIZ': 'Quiz',
+                    'VOCE_SABIA': 'Você Sabia?'
+                };
+
+                const typeLabels = {
+                    'PHOTO': 'Foto',
+                    'VIDEO': 'Vídeo',
+                    'RSS': 'RSS',
+                    'WEATHER': 'Clima'
+                };
+
+                const categoryColors = {
+                    'MES_SAZONAL': 'bg-primary',
+                    'NOTICIAS_LOCAIS': 'bg-info',
+                    'ESPORTES': 'bg-success',
+                    'DICAS': 'bg-warning',
+                    'CURIOSIDADES': 'bg-secondary',
+                    'QUIZ': 'bg-danger',
+                    'VOCE_SABIA': 'bg-dark'
+                };
+
+                return `
+                    <tr>
+                        <td>
+                            ${midia.type === 'PHOTO' ? 
+                                `<img src="${midia.url}" class="media-preview" alt="Preview" style="max-width: 150px; max-height: 90px; object-fit: cover; border-radius: 4px;">` : 
+                                midia.type === 'VIDEO' ? 
+                                `<video class="media-preview" style="max-width: 150px; max-height: 90px; object-fit: cover; border-radius: 4px;" controls>
+                                    <source src="${midia.url}" type="video/mp4">
+                                    <source src="${midia.url}" type="video/avi">
+                                    <source src="${midia.url}" type="video/mov">
+                                    Seu navegador não suporta o elemento de vídeo.
+                                </video>` :
+                                `<i class="bi bi-${midia.type === 'RSS' ? 'rss' : 'cloud-sun'} fs-2 text-muted"></i>`
+                            }
+                        </td>
+                        <td>
+                            <strong>${midia.title}</strong>
+                            ${midia.description ? `<br><small class="text-muted">${midia.description}</small>` : ''}
+                        </td>
+                        <td>
+                            <span class="badge category-badge ${categoryColors[midia.category] || 'bg-secondary'}">
+                                ${categoryLabels[midia.category] || midia.category}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">${typeLabels[midia.type] || midia.type}</span>
+                        </td>
+                        <td>${midia.duration ? midia.duration + 's' : '-'}</td>
+                        <td>
+                            <span class="badge ${midia.active ? 'bg-success' : 'bg-secondary'}">
+                                ${midia.active ? 'Ativa' : 'Inativa'}
+                            </span>
+                        </td>
+                        <td>
+                            ${midia.dateExpire ? 
+                                `<span class="${new Date(midia.dateExpire) <= new Date() ? 'text-danger' : 'text-warning'}">
+                                    ${new Date(midia.dateExpire).toLocaleDateString('pt-BR')} ${new Date(midia.dateExpire).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}
+                                </span>` : 
+                                '<span class="text-muted">Sem expiração</span>'
+                            }
+                        </td>
+                        <td>${new Date(midia.createdAt).toLocaleDateString('pt-BR')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info me-1" onclick="verDetalhes(${midia.id})" title="Ver Detalhes">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editarMidia(${midia.id})" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="confirmarExclusao(${midia.id}, '${midia.title}')" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filtrar mídias
+        function filtrarMidias() {
+            const categoria = document.getElementById('filtroCategoria').value;
+            const tipo = document.getElementById('filtroTipo').value;
+            const busca = document.getElementById('buscarMidia').value.toLowerCase();
+
+            midiasFiltradas = midias.filter(midia => {
+                const matchCategoria = !categoria || midia.category === categoria;
+                const matchTipo = !tipo || midia.type === tipo;
+                const matchBusca = !busca || midia.title.toLowerCase().includes(busca) || 
+                                 (midia.description && midia.description.toLowerCase().includes(busca));
+                
+                return matchCategoria && matchTipo && matchBusca;
+            });
+
+            renderizarTabela();
+        }
+
+        // Abrir modal para criar
+        function abrirModalCriar() {
+            document.getElementById('midiaModalTitle').textContent = 'Nova Mídia Global';
+            document.getElementById('midiaForm').reset();
+            document.getElementById('midiaId').value = '';
+            document.getElementById('midiaActive').checked = true;
+            new bootstrap.Modal(document.getElementById('midiaModal')).show();
+        }
+
+        // Editar mídia
+        async function editarMidia(id) {
+            try {
+                const response = await fetch(`${buildApiUrl('/private/global-medias')}/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const midia = await response.json();
+                    
+                    document.getElementById('midiaModalTitle').textContent = 'Editar Mídia Global';
+                    document.getElementById('midiaId').value = midia.id;
+                    document.getElementById('midiaTitle').value = midia.title;
+                    document.getElementById('midiaCategory').value = midia.category;
+                    document.getElementById('midiaType').value = midia.type;
+                    document.getElementById('midiaDuration').value = midia.duration || '';
+                    document.getElementById('midiaUrl').value = midia.url;
+                    document.getElementById('midiaDescription').value = midia.description || '';
+                    document.getElementById('midiaDateExpire').value = midia.dateExpire ? new Date(midia.dateExpire).toISOString().slice(0, 16) : '';
+                    document.getElementById('midiaActive').checked = midia.active;
+                    
+                    new bootstrap.Modal(document.getElementById('midiaModal')).show();
+                } else {
+                    throw new Error('Erro ao carregar mídia');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao carregar dados da mídia', 'danger');
+            }
+        }
+
+        // Salvar mídia
+        document.getElementById('midiaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('midiaId').value;
+            const isEdit = !!id;
+            
+            // Verificar qual aba está ativa
+            const uploadTab = document.getElementById('upload-tab');
+            const isUploadMode = uploadTab.classList.contains('active');
+            
+            let mediaUrl = '';
+            let mediaType = document.getElementById('midiaType').value;
+            
+            try {
+                if (isUploadMode && !isEdit) {
+                    // Modo upload - fazer upload do arquivo primeiro
+                    const fileInput = document.getElementById('fileInput');
+                    if (!fileInput.files[0]) {
+                        showAlert('Por favor, selecione um arquivo para upload', 'warning');
+                        return;
+                    }
+                    
+                    // Fazer upload do arquivo
+                    const uploadResult = await uploadFile();
+                    mediaUrl = uploadResult.url;
+                    
+                    // Auto-detectar tipo se não foi selecionado
+                    if (!mediaType) {
+                        mediaType = getMediaTypeFromFile(fileInput.files[0]);
+                        document.getElementById('midiaType').value = mediaType;
+                    }
+                } else {
+                    // Modo URL - usar URL fornecida
+                    mediaUrl = document.getElementById('midiaUrl').value;
+                    if (!mediaUrl) {
+                        showAlert('Por favor, forneça uma URL para a mídia', 'warning');
+                        return;
+                    }
+                }
+                
+                const dateExpireValue = document.getElementById('midiaDateExpire').value;
+                const data = {
+                    title: document.getElementById('midiaTitle').value,
+                    category: document.getElementById('midiaCategory').value,
+                    type: mediaType,
+                    duration: parseInt(document.getElementById('midiaDuration').value) || null,
+                    url: mediaUrl,
+                    description: document.getElementById('midiaDescription').value || null,
+                    dateExpire: dateExpireValue ? new Date(dateExpireValue).toISOString() : null,
+                    active: document.getElementById('midiaActive').checked
+                };
+
+                const url = isEdit ? 
+                    `${buildApiUrl('/private/global-medias')}/${id}` : 
+                    `${buildApiUrl('/private/global-medias')}`;
+                
+                const response = await fetch(url, {
+                    method: isEdit ? 'PUT' : 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    showAlert(`Mídia ${isEdit ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('midiaModal')).hide();
+                    carregarMidias();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erro ao salvar mídia');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert(error.message || 'Erro ao salvar mídia', 'danger');
+            }
+        });
+
+        // Confirmar exclusão
+        function confirmarExclusao(id, titulo) {
+            midiaParaExcluir = id;
+            new bootstrap.Modal(document.getElementById('confirmarExclusaoModal')).show();
+        }
+
+        // Excluir mídia
+        document.getElementById('confirmarExclusaoBtn').addEventListener('click', async function() {
+            if (!midiaParaExcluir) return;
+
+            try {
+                const response = await fetch(`${buildApiUrl('/private/global-medias')}/${midiaParaExcluir}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    showAlert('Mídia excluída com sucesso!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('confirmarExclusaoModal')).hide();
+                    carregarMidias();
+                } else {
+                    throw new Error('Erro ao excluir mídia');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao excluir mídia', 'danger');
+            } finally {
+                midiaParaExcluir = null;
+            }
+        });
+
+        // Preview para upload de arquivo
+        function previewUploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const previewContainer = document.getElementById('uploadPreviewContainer');
+            const preview = document.getElementById('uploadPreview');
+
+            if (file) {
+                previewContainer.style.display = 'block';
+                
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '200px';
+                    img.style.objectFit = 'contain';
+                    preview.innerHTML = '';
+                    preview.appendChild(img);
+                } else if (file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(file);
+                    video.controls = true;
+                    video.style.maxWidth = '100%';
+                    video.style.maxHeight = '200px';
+                    preview.innerHTML = '';
+                    preview.appendChild(video);
+                }
+
+                // Auto-preencher título com nome do arquivo
+                const titleInput = document.getElementById('midiaTitle');
+                if (!titleInput.value) {
+                    titleInput.value = file.name.replace(/\.[^/.]+$/, ""); // Remove a extensão do arquivo
+                }
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        // Função para upload de arquivo
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                throw new Error('Nenhum arquivo selecionado');
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const progressContainer = document.getElementById('uploadProgress');
+            const progressBar = progressContainer.querySelector('.progress-bar');
+            progressContainer.style.display = 'block';
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+
+                // Atualizar a barra de progresso durante o upload
+                xhr.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        const percentComplete = (event.loaded / event.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressBar.textContent = Math.round(percentComplete) + '%';
+                    }
+                });
+
+                xhr.onload = function() {
+                    progressContainer.style.display = 'none';
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve(result);
+                    } else {
+                        reject(new Error('Erro no upload do arquivo'));
+                    }
+                };
+
+                xhr.onerror = function() {
+                    progressContainer.style.display = 'none';
+                    reject(new Error('Erro de conexão durante o upload'));
+                };
+
+                xhr.open('POST', buildApiUrl('/private/upload-global-media'));
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.send(formData);
+            });
+        }
+
+        // Determinar tipo de mídia baseado no arquivo
+        function getMediaTypeFromFile(file) {
+            if (file.type.startsWith('image/')) {
+                return 'PHOTO';
+            } else if (file.type.startsWith('video/')) {
+                return 'VIDEO';
+            }
+            return 'PHOTO'; // Default
+        }
+
+        // Função para mostrar alertas
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+
+        // Event listeners para as abas
+        document.getElementById('upload-tab').addEventListener('click', function () {
+            // Limpar URL quando trocar para upload
+            document.getElementById('midiaUrl').value = '';
+            document.getElementById('midiaUrl').removeAttribute('required');
+            document.getElementById('fileInput').setAttribute('required', 'required');
+        });
+
+        document.getElementById('url-tab').addEventListener('click', function () {
+            // Limpar arquivo quando trocar para URL
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadPreviewContainer').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('fileInput').removeAttribute('required');
+            document.getElementById('midiaUrl').setAttribute('required', 'required');
+        });
+
+        // Resetar modal quando fechado
+        document.getElementById('midiaModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('midiaForm').reset();
+            document.getElementById('midiaId').value = '';
+            document.getElementById('uploadPreviewContainer').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('midiaModalTitle').textContent = 'Nova Mídia Global';
+            
+            // Voltar para a aba de upload
+            document.getElementById('upload-tab').click();
+        });
+
+        // Ver detalhes da mídia
+        async function verDetalhes(midiaId) {
+            try {
+                const response = await fetch(`${buildApiUrl(`/private/global-medias/${midiaId}/panels`)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const midia = midias.find(m => m.id === midiaId);
+                    
+                    const categoryLabels = {
+                        'MES_SAZONAL': 'Mês Sazonal',
+                        'NOTICIAS_LOCAIS': 'Notícias Locais',
+                        'ESPORTES': 'Esportes',
+                        'DICAS': 'Dicas',
+                        'CURIOSIDADES': 'Curiosidades',
+                        'QUIZ': 'Quiz',
+                        'VOCE_SABIA': 'Você Sabia?'
+                    };
+
+                    const typeLabels = {
+                        'PHOTO': 'Foto',
+                        'VIDEO': 'Vídeo',
+                        'RSS': 'RSS',
+                        'WEATHER': 'Clima'
+                    };
+
+                    let detalhesHtml = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Informações da Mídia</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Título:</strong> ${midia.title}</p>
+                                        <p><strong>Descrição:</strong> ${midia.description || 'Não informada'}</p>
+                                        <p><strong>Categoria:</strong> <span class="badge bg-primary">${categoryLabels[midia.category] || midia.category}</span></p>
+                                        <p><strong>Tipo:</strong> <span class="badge bg-secondary">${typeLabels[midia.type] || midia.type}</span></p>
+                                        <p><strong>Duração:</strong> ${midia.duration ? midia.duration + 's' : 'N/A'}</p>
+                                        <p><strong>Status:</strong> <span class="badge ${midia.active ? 'bg-success' : 'bg-danger'}">${midia.active ? 'Ativa' : 'Inativa'}</span></p>
+                                        <p><strong>Data de Expiração:</strong> ${midia.dateExpire ? new Date(midia.dateExpire).toLocaleString('pt-BR') : 'Sem expiração'}</p>
+                                        <p><strong>Criada em:</strong> ${new Date(midia.createdAt).toLocaleString('pt-BR')}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-display"></i> Painéis Associados (${data.panels.length})</h6>
+                                    </div>
+                                    <div class="card-body">
+                    `;
+
+                    if (data.panels.length === 0) {
+                        detalhesHtml += `
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2">Esta mídia não está associada a nenhum painel</p>
+                            </div>
+                        `;
+                    } else {
+                        detalhesHtml += `<div class="list-group list-group-flush">`;
+                        data.panels.forEach(panel => {
+                            detalhesHtml += `
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">${panel.name}</h6>
+                                        <small class="text-muted">${new Date(panel.associatedAt).toLocaleDateString('pt-BR')}</small>
+                                    </div>
+                                    <p class="mb-1">${panel.description || 'Sem descrição'}</p>
+                                    <small class="text-muted">Usuário: ${panel.user.name} (${panel.user.email})</small>
+                                </div>
+                            `;
+                        });
+                        detalhesHtml += `</div>`;
+                    }
+
+                    detalhesHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Adicionar preview da mídia se for foto ou vídeo
+                    if (midia.type === 'PHOTO' || midia.type === 'VIDEO') {
+                        detalhesHtml += `
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-eye"></i> Preview</h6>
+                                        </div>
+                                        <div class="card-body text-center">
+                        `;
+                        
+                        if (midia.type === 'PHOTO') {
+                            detalhesHtml += `<img src="${midia.url}" class="img-fluid" style="max-height: 300px; border-radius: 8px;" alt="Preview">`;
+                        } else if (midia.type === 'VIDEO') {
+                            detalhesHtml += `
+                                <video controls style="max-height: 300px; border-radius: 8px;">
+                                    <source src="${midia.url}" type="video/mp4">
+                                    <source src="${midia.url}" type="video/avi">
+                                    <source src="${midia.url}" type="video/mov">
+                                    Seu navegador não suporta o elemento de vídeo.
+                                </video>
+                            `;
+                        }
+                        
+                        detalhesHtml += `
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    document.getElementById('detalhesContent').innerHTML = detalhesHtml;
+                    new bootstrap.Modal(document.getElementById('detalhesModal')).show();
+                } else {
+                    throw new Error('Erro ao carregar detalhes');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showAlert('Erro ao carregar detalhes da mídia', 'danger');
+            }
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('usuarioName');
+                localStorage.removeItem('usuarioEmail');
+                window.location.href = '../login';
+            }
+        }
+    </script>
+</body>
+</html>
