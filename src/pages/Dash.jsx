@@ -9,6 +9,7 @@ import { useTheme } from '../contexts/ThemeContext';
 function Dash() {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
   const [stats, setStats] = useState({
     devices: 0,
     panels: 0,
@@ -24,6 +25,16 @@ function Dash() {
   const [showPanelModal, setShowPanelModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+
+  // Detect viewport width to adjust layout for mobile
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Estados para formulários
   const [deviceFormData, setDeviceFormData] = useState({
@@ -580,7 +591,7 @@ function Dash() {
       {/* Statistics Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
         marginBottom: '2rem'
       }}>
@@ -588,7 +599,7 @@ function Dash() {
           <div style={{
             backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             boxShadow: currentTheme.shadow,
             borderLeft: `4px solid ${currentTheme.primary}`,
             cursor: 'pointer',
@@ -609,11 +620,11 @@ function Dash() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Dispositivos</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.devices}</p>
+                <p style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.devices}</p>
               </div>
               <Monitor size={32} style={{ color: currentTheme.primary, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: isMobile ? '0.75rem' : '0.8rem', color: currentTheme.textSecondary }}>
               <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +12% este mês
             </div>
@@ -624,7 +635,7 @@ function Dash() {
           <div style={{
             backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             boxShadow: currentTheme.shadow,
             borderLeft: `4px solid ${currentTheme.success}`,
             cursor: 'pointer',
@@ -645,11 +656,11 @@ function Dash() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Painéis</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.success, margin: 0 }}>{stats.panels}</p>
+                <p style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: '700', color: currentTheme.success, margin: 0 }}>{stats.panels}</p>
               </div>
               <Layout size={32} style={{ color: currentTheme.success, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: isMobile ? '0.75rem' : '0.8rem', color: currentTheme.textSecondary }}>
               <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +8% este mês
             </div>
@@ -660,7 +671,7 @@ function Dash() {
           <div style={{
             backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             boxShadow: currentTheme.shadow,
             borderLeft: `4px solid ${currentTheme.warning}`,
             cursor: 'pointer',
@@ -681,11 +692,11 @@ function Dash() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Mídias</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.warning, margin: 0 }}>{stats.medias}</p>
+                <p style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: '700', color: currentTheme.warning, margin: 0 }}>{stats.medias}</p>
               </div>
               <Image size={32} style={{ color: currentTheme.warning, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: isMobile ? '0.75rem' : '0.8rem', color: currentTheme.textSecondary }}>
               <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +25% este mês
             </div>
@@ -696,7 +707,7 @@ function Dash() {
           <div style={{
             backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             boxShadow: currentTheme.shadow,
             borderLeft: `4px solid ${currentTheme.error}`,
             cursor: 'pointer',
@@ -717,11 +728,11 @@ function Dash() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Campanhas</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.error, margin: 0 }}>{stats.campaigns}</p>
+                <p style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: '700', color: currentTheme.error, margin: 0 }}>{stats.campaigns}</p>
               </div>
               <TrendingUp size={32} style={{ color: currentTheme.error, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: isMobile ? '0.75rem' : '0.8rem', color: currentTheme.textSecondary }}>
               <TrendingDown size={16} style={{ marginRight: '0.25rem', color: currentTheme.error }} />
               -3% este mês
             </div>
@@ -732,7 +743,7 @@ function Dash() {
           <div style={{
             backgroundColor: currentTheme.cardBackground,
             borderRadius: '0.5rem',
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             boxShadow: currentTheme.shadow,
             borderLeft: `4px solid ${currentTheme.primary}`,
             cursor: 'pointer',
@@ -753,11 +764,11 @@ function Dash() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: currentTheme.textPrimary, fontSize: '0.9rem' }}>Clientes</h3>
-                <p style={{ fontSize: '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.clients}</p>
+                <p style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: '700', color: currentTheme.primary, margin: 0 }}>{stats.clients}</p>
               </div>
               <DollarSign size={32} style={{ color: currentTheme.primary, opacity: 0.7 }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: '0.8rem', color: currentTheme.textSecondary }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem', fontSize: isMobile ? '0.75rem' : '0.8rem', color: currentTheme.textSecondary }}>
               <TrendingUp size={16} style={{ marginRight: '0.25rem', color: currentTheme.success }} />
               +15% este mês
             </div>
@@ -771,7 +782,7 @@ function Dash() {
       <div style={{
         backgroundColor: currentTheme.cardBackground,
         borderRadius: '0.5rem',
-        padding: '2rem',
+        padding: isMobile ? '1.5rem' : '2rem',
         marginBottom: '2rem',
         boxShadow: currentTheme.shadow,
         border: `1px solid ${currentTheme.border}`
@@ -786,18 +797,18 @@ function Dash() {
         </h2>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '1rem'
         }}>
           <button 
             onClick={() => navigate('/devices?add=1')}
             style={{
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             backgroundColor: currentTheme.buttonPrimary,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
-            fontSize: '1rem',
+            fontSize: isMobile ? '0.95rem' : '1rem',
             cursor: 'pointer',
             transition: 'background-color 0.2s'
           }}>
@@ -806,12 +817,12 @@ function Dash() {
           <button 
             onClick={() => navigate('/panels?add=1')}
             style={{
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             backgroundColor: currentTheme.success,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
-            fontSize: '1rem',
+            fontSize: isMobile ? '0.95rem' : '1rem',
             cursor: 'pointer',
             transition: 'background-color 0.2s'
           }}>
@@ -820,12 +831,12 @@ function Dash() {
           <button 
             onClick={() => navigate('/medias?add=1')}
             style={{
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             backgroundColor: currentTheme.warning,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
-            fontSize: '1rem',
+            fontSize: isMobile ? '0.95rem' : '1rem',
             cursor: 'pointer',
             transition: 'background-color 0.2s'
           }}>
@@ -834,12 +845,12 @@ function Dash() {
           <button 
             onClick={() => navigate('/campaigns?add=1')}
             style={{
-            padding: '1rem',
+            padding: isMobile ? '0.75rem' : '1rem',
             backgroundColor: currentTheme.buttonDanger,
             color: 'white',
             border: 'none',
             borderRadius: '0.375rem',
-            fontSize: '1rem',
+            fontSize: isMobile ? '0.95rem' : '1rem',
             cursor: 'pointer',
             transition: 'background-color 0.2s'
           }}>
@@ -876,8 +887,8 @@ function Dash() {
       {/* Gráficos e Analytics */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '2rem',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: isMobile ? '1.5rem' : '2rem',
         marginBottom: '2rem'
       }}>
         {/* Gráfico de Dispositivos Online/Offline */}

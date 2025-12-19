@@ -653,7 +653,7 @@ const Medias = () => {
             }}
           >
             <i className="bi bi-plus-circle"></i>
-            Adicionar Mídia
+             Mídia
           </button>
           
           <button

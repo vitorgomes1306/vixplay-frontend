@@ -119,7 +119,8 @@ const Layout = ({ children }) => {
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            flexWrap: isMobile ? 'wrap' : 'nowrap'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {/* Mobile Menu Button */}
@@ -156,21 +157,23 @@ const Layout = ({ children }) => {
               <div>
                 <h1 style={{ 
                   margin: 0,
-                  fontSize: '1.5rem',
+                  fontSize: isMobile ? '1.25rem' : '1.5rem',
                   fontWeight: '600',
                   color: currentTheme.textPrimary,
                   fontFamily: 'Poppins, sans-serif'
                 }}>
                   Vix Play
                 </h1>
-                <p style={{
-                  margin: '0.25rem 0 0 0',
-                  fontSize: '0.875rem',
-                  color: currentTheme.textSecondary,
-                  fontFamily: 'Poppins, sans-serif'
-                }}>
-                  Gerenciamento de mídias, dispovitivos, paineis, clientes e campanhas.
-                </p>
+                {!isMobile && (
+                  <p style={{
+                    margin: '0.25rem 0 0 0',
+                    fontSize: '0.875rem',
+                    color: currentTheme.textSecondary,
+                    fontFamily: 'Poppins, sans-serif'
+                  }}>
+                    Gerenciamento de mídias, dispovitivos, paineis, clientes e campanhas.
+                  </p>
+                )}
               </div>
             </div>
             
@@ -178,7 +181,8 @@ const Layout = ({ children }) => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '1rem'
+              gap: isMobile ? '0.5rem' : '1rem',
+              flexWrap: isMobile ? 'wrap' : 'nowrap'
             }}>
               <div style={{
                 display: 'flex',
@@ -240,14 +244,14 @@ const Layout = ({ children }) => {
                 color: currentTheme.textSecondary,
                 border: `1px solid ${currentTheme.border}`,
                 borderRadius: '0.375rem',
-                fontSize: '1.1rem',
+                fontSize: isMobile ? '1rem' : '1.1rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '40px',
-                height: '40px',
+                width: isMobile ? '36px' : '40px',
+                height: isMobile ? '36px' : '40px',
                 position: 'relative'
               }}
               onMouseEnter={(e) => {
@@ -287,14 +291,14 @@ const Layout = ({ children }) => {
                   color: currentTheme.textSecondary,
                   border: `1px solid ${currentTheme.border}`,
                   borderRadius: '0.375rem',
-                  fontSize: '1.1rem',
+                  fontSize: isMobile ? '1rem' : '1.1rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '40px',
-                  height: '40px'
+                  width: isMobile ? '36px' : '40px',
+                  height: isMobile ? '36px' : '40px'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = currentTheme.borderLight;
@@ -319,14 +323,14 @@ const Layout = ({ children }) => {
                   color: currentTheme.textSecondary,
                   border: `1px solid ${currentTheme.border}`,
                   borderRadius: '0.375rem',
-                  fontSize: '1.1rem',
+                  fontSize: isMobile ? '1rem' : '1.1rem',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '40px',
-                  height: '40px'
+                  width: isMobile ? '36px' : '40px',
+                  height: isMobile ? '36px' : '40px'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = currentTheme.borderLight;
