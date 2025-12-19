@@ -1669,20 +1669,7 @@ const Campaigns = () => {
                 gridTemplateColumns: '1fr 1fr',
                 gap: '1rem'
               }}>
-                <div>
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="campaignActive"
-                      checked={!!formData.active}
-                      onChange={(e) => handleInputChange('active', e.target.checked)}
-                    />
-                    <label className="form-check-label" htmlFor="campaignActive">
-                      Campanha ativa
-                    </label>
-                  </div>
-                </div>
+                
                 <div>
                   <div className="form-check">
                     <input
@@ -1691,9 +1678,10 @@ const Campaigns = () => {
                       id="campaignRecurring"
                       checked={!!formData.isRecurring}
                       onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
+                      style={{ accentColor: currentTheme.primary, outline: 'none' }}
                     />
-                    <label className="form-check-label" htmlFor="campaignRecurring">
-                      <i className="bi bi-arrow-repeat me-1"></i>Campanha Recorrente
+                    <label className="form-check-label" htmlFor="campaignRecurring" style={{ color: currentTheme.textPrimary }}>
+                      <i className="bi bi-arrow-repeat me-1"></i> Campanha Recorrente 
                     </label>
                   </div>
                 </div>
@@ -2374,30 +2362,32 @@ const Campaigns = () => {
 
               {/* Controles de status e recorrência */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="editCampaignActive"
-                    checked={!!formData.active}
-                    onChange={(e) => handleInputChange('active', e.target.checked)}
-                  />
-                  <label className="form-check-label" htmlFor="editCampaignActive">
-                    Campanha Ativa
-                  </label>
-                </div>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="editCampaignRecurring"
-                    checked={!!formData.isRecurring}
-                    onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
-                  />
-                  <label className="form-check-label" htmlFor="editCampaignRecurring">
-                    <i className="bi bi-arrow-repeat me-1"></i>Campanha Recorrente
-                  </label>
-                </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="editCampaignActive"
+                  checked={!!formData.active}
+                  onChange={(e) => handleInputChange('active', e.target.checked)}
+                  style={{ accentColor: currentTheme.primary, outline: 'none' }}
+                />
+                <label className="form-check-label" htmlFor="editCampaignActive" style={{ color: currentTheme.textPrimary }}>
+                  Campanha Ativa
+                </label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="editCampaignRecurring"
+                  checked={!!formData.isRecurring}
+                  onChange={(e) => handleInputChange('isRecurring', e.target.checked)}
+                  style={{ accentColor: currentTheme.primary, outline: 'none' }}
+                />
+                <label className="form-check-label" htmlFor="editCampaignRecurring" style={{ color: currentTheme.textPrimary }}>
+                  <i className="bi bi-arrow-repeat me-1"> </i> Campanha Recorrente
+                </label>
+              </div>
               </div>
 
               {/* Valor */}

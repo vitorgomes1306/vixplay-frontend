@@ -26,15 +26,7 @@ const Panels = () => {
     name: '',
     description: '',
     active: true,
-    type: 'FULL_SCREEN',
-    showWeather: false,
-    weatherFrequency: 10,
-    showNews: false,
-    newsFrequency: 10,
-    showLottery: false,
-    lotteryFrequency: 10,
-    showCoins: false,
-    coinsFrequency: 10
+    type: 'FULL_SCREEN'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +46,7 @@ const Panels = () => {
           navigate(location.pathname + location.search, { replace: true, state: {} });
         }
       }
-    } catch {}
+    } catch { }
   }, [location, navigate]);
 
   const fetchPanels = async () => {
@@ -972,8 +964,8 @@ const Panels = () => {
         </div>
       )}
 
-      {/* Modal Criar Painel */}
-      {showCreateModal && (
+      {/* Modal Criar/Editar Painel (reutilizado) */}
+      {(showCreateModal || showEditModal) && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -1013,12 +1005,21 @@ const Panels = () => {
                 alignItems: 'center',
                 gap: '0.5rem'
               }}>
-                <i className="bi bi-plus-circle"></i>
-                Novo Painel
+                {showCreateModal ? (
+                  <i className="bi bi-plus-circle"></i>
+                ) : (
+                  <i className="bi bi-pencil-square"></i>
+                )}
+                {showCreateModal ? 'Novo Painel' : 'Editar Painel'}
               </h2>
               <button
                 onClick={() => {
-                  setShowCreateModal(false);
+                  if (showCreateModal) {
+                    setShowCreateModal(false);
+                  } else {
+                    setShowEditModal(false);
+                    setEditingPanel(null);
+                  }
                   resetForm();
                   setError('');
                 }}
@@ -1037,6 +1038,19 @@ const Panels = () => {
 
             {/* Body */}
             <div style={{ padding: '1.5rem' }}>
+              {error && (
+                <div style={{
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  color: '#dc2626',
+                  padding: '0.75rem',
+                  borderRadius: '0.5rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  {error}
+                </div>
+              )}
               {/* Nome do Painel */}
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{
@@ -1052,14 +1066,14 @@ const Panels = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Ex: Painel Principal"
+                  placeholder={showCreateModal ? 'Ex: Painel Principal' : 'Digite o nome do painel'}
                   style={{
                     width: '100%',
                     padding: '0.75rem',
                     border: `1px solid ${currentTheme.border}`,
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
-                    backgroundColor: currentTheme.background,
+                    backgroundColor: currentTheme.inputBackground || currentTheme.background,
                     color: currentTheme.textPrimary,
                     outline: 'none',
                     transition: 'border-color 0.2s'
@@ -1091,15 +1105,15 @@ const Panels = () => {
                     border: `1px solid ${currentTheme.border}`,
                     borderRadius: '0.5rem',
                     fontSize: '0.875rem',
-                    backgroundColor: currentTheme.background,
-                    color: currentTheme.textPrimary,
-                    outline: 'none',
-                    transition: 'border-color 0.2s',
-                    resize: 'vertical'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
-                  onBlur={(e) => e.target.style.borderColor = currentTheme.border}
-                />
+                  backgroundColor: currentTheme.inputBackground || currentTheme.background,
+                  color: currentTheme.textPrimary,
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  resize: 'vertical'
+                }}
+                onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
+                onBlur={(e) => e.target.style.borderColor = currentTheme.border}
+              />
               </div>
 
               {/* Tipo de Painel */}
@@ -1127,8 +1141,8 @@ const Panels = () => {
                       textAlign: 'center',
                       cursor: 'pointer',
                       transition: 'all 0.3s',
-                      backgroundColor: formData.type === 'FULL_SCREEN' ? `${currentTheme.primary}10` : currentTheme.background
-                    }}
+                    backgroundColor: formData.type === 'FULL_SCREEN' ? `${currentTheme.primary}10` : (currentTheme.inputBackground || currentTheme.background)
+                  }}
                   >
                     <i className="bi bi-tv" style={{
                       fontSize: '2rem',
@@ -1162,8 +1176,8 @@ const Panels = () => {
                       textAlign: 'center',
                       cursor: 'pointer',
                       transition: 'all 0.3s',
-                      backgroundColor: formData.type === 'DIVIDED' ? `${currentTheme.primary}10` : currentTheme.background
-                    }}
+                    backgroundColor: formData.type === 'DIVIDED' ? `${currentTheme.primary}10` : (currentTheme.inputBackground || currentTheme.background)
+                  }}
                   >
                     <i className="bi bi-layout-split" style={{
                       fontSize: '2rem',
@@ -1205,7 +1219,7 @@ const Panels = () => {
                 Configurações de Exibição
               </h6>
 
-        
+
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{
                   display: 'flex',
@@ -1213,7 +1227,7 @@ const Panels = () => {
                   gap: '0.5rem',
                   marginBottom: '0.5rem'
                 }}>
-                  
+
                   <label htmlFor="showCoins" style={{
                     fontSize: '0.875rem',
                     color: currentTheme.textPrimary,
@@ -1222,8 +1236,8 @@ const Panels = () => {
                     alignItems: 'center',
                     gap: '0.5rem'
                   }}>
-                   
-                   Para formar sua playlist, após a criação desse Painel, vá em Mídias e associe suas mídias ao painel desejado.
+
+                    Para formar sua playlist, após a criação desse Painel, vá em Mídias e associe suas mídias ao painel desejado.
                   </label>
                 </div>
                 {formData.showCoins && (
@@ -1266,7 +1280,12 @@ const Panels = () => {
             }}>
               <button
                 onClick={() => {
-                  setShowCreateModal(false);
+                  if (showCreateModal) {
+                    setShowCreateModal(false);
+                  } else {
+                    setShowEditModal(false);
+                    setEditingPanel(null);
+                  }
                   resetForm();
                   setError('');
                 }}
@@ -1286,7 +1305,7 @@ const Panels = () => {
                 Cancelar
               </button>
               <button
-                onClick={handleCreatePanel}
+                onClick={showCreateModal ? handleCreatePanel : handleUpdatePanel}
                 disabled={isSubmitting || !formData.name.trim()}
                 style={{
                   padding: '0.75rem 1.5rem',
@@ -1313,12 +1332,12 @@ const Panels = () => {
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }}></div>
-                    Criando...
+                    {showCreateModal ? 'Criando...' : 'Salvando...'}
                   </>
                 ) : (
                   <>
                     <i className="bi bi-check-circle"></i>
-                    Criar Painel
+                    {showCreateModal ? 'Criar Painel' : 'Atualizar Painel'}
                   </>
                 )}
               </button>
@@ -1327,389 +1346,6 @@ const Panels = () => {
         </div>
       )}
 
-      {/* Modal Editar Painel */}
-      {showEditModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '1rem'
-        }}>
-          <div style={{
-            backgroundColor: currentTheme.cardBackground,
-            borderRadius: '0.75rem',
-            width: '100%',
-            maxWidth: '600px',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            {/* Header */}
-            <div style={{
-              padding: '1.5rem',
-              borderBottom: `1px solid ${currentTheme.border}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <h2 style={{
-                margin: 0,
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                color: currentTheme.textPrimary,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <i className="bi bi-pencil-square"></i>
-                Editar Painel
-              </h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  resetForm();
-                  setEditingPanel(null);
-                  setError('');
-                }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '1.5rem',
-                  cursor: 'pointer',
-                  color: currentTheme.textSecondary,
-                  padding: '0.25rem'
-                }}
-              >
-                <i className="bi bi-x"></i>
-              </button>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '1.5rem' }}>
-              {error && (
-                <div style={{
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  color: '#dc2626',
-                  padding: '0.75rem',
-                  borderRadius: '0.5rem',
-                  marginBottom: '1rem',
-                  fontSize: '0.875rem'
-                }}>
-                  {error}
-                </div>
-              )}
-
-              {/* Nome do Painel */}
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: currentTheme.textPrimary,
-                  marginBottom: '0.5rem'
-                }}>
-                  Nome do Painel *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Digite o nome do painel"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `1px solid ${currentTheme.border}`,
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    backgroundColor: currentTheme.inputBackground,
-                    color: currentTheme.textPrimary,
-                    outline: 'none'
-                  }}
-                />
-              </div>
-
-              {/* Descrição */}
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: currentTheme.textPrimary,
-                  marginBottom: '0.5rem'
-                }}>
-                  Descrição
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Digite uma descrição para o painel"
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `1px solid ${currentTheme.border}`,
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    backgroundColor: currentTheme.inputBackground,
-                    color: currentTheme.textPrimary,
-                    outline: 'none',
-                    resize: 'vertical'
-                  }}
-                />
-              </div>
-
-
-
-              {/* Tipo de Painel */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: currentTheme.textPrimary,
-                  marginBottom: '0.75rem'
-                }}>
-                  Tipo de Painel
-                </label>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '1rem'
-                }}>
-                  <div
-                    onClick={() => selectPanelType('FULL_SCREEN')}
-                    style={{
-                      border: formData.type === 'FULL_SCREEN'
-                        ? `2px solid ${currentTheme.primary}`
-                        : `2px solid ${currentTheme.border}`,
-                      borderRadius: '0.5rem',
-                      padding: '1rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      backgroundColor: formData.type === 'FULL_SCREEN'
-                        ? `${currentTheme.primary}10`
-                        : currentTheme.cardBackground
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <i className="bi bi-aspect-ratio" style={{
-                        fontSize: '2rem',
-                        color: formData.type === 'FULL_SCREEN'
-                          ? currentTheme.primary
-                          : currentTheme.textSecondary
-                      }}></i>
-                    </div>
-                    <h5 style={{
-                      margin: 0,
-                      textAlign: 'center',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      color: currentTheme.textPrimary
-                    }}>
-                      Tela Cheia
-                    </h5>
-                    <p style={{
-                      margin: '0.25rem 0 0 0',
-                      textAlign: 'center',
-                      fontSize: '0.75rem',
-                      color: currentTheme.textSecondary
-                    }}>
-                      Conteúdo ocupa toda a tela
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => selectPanelType('DIVIDED')}
-                    style={{
-                      border: formData.type === 'DIVIDED'
-                        ? `2px solid ${currentTheme.primary}`
-                        : `2px solid ${currentTheme.border}`,
-                      borderRadius: '0.5rem',
-                      padding: '1rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      backgroundColor: formData.type === 'DIVIDED'
-                        ? `${currentTheme.primary}10`
-                        : currentTheme.cardBackground
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <i className="bi bi-grid-3x3" style={{
-                        fontSize: '2rem',
-                        color: formData.type === 'DIVIDED'
-                          ? currentTheme.primary
-                          : currentTheme.textSecondary
-                      }}></i>
-                    </div>
-                    <h5 style={{
-                      margin: 0,
-                      textAlign: 'center',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      color: currentTheme.textPrimary
-                    }}>
-                      Dividido
-                    </h5>
-                    <p style={{
-                      margin: '0.25rem 0 0 0',
-                      textAlign: 'center',
-                      fontSize: '0.75rem',
-                      color: currentTheme.textSecondary
-                    }}>
-                      Tela dividida em seções
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Configurações de Exibição */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{
-                  margin: '0 0 1rem 0',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: currentTheme.textPrimary
-                }}>
-                  Configurações de Exibição
-                </h4>
-
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem',
-                  border: `1px solid ${currentTheme.border}`,
-                  borderRadius: '0.5rem',
-                  marginBottom: '0.75rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    
-                    <span style={{ fontSize: '0.875rem', color: currentTheme.textPrimary }}>
-                       Para formar sua playlist, após a criação desse Painel, vá em Mídias e associe suas mídias ao painel desejado.
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                   
-                    {formData.showCoins && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: currentTheme.textSecondary }}>
-                          A cada:
-                        </span>
-                        <input
-                          type="number"
-                          value={formData.coinsFrequency}
-                          onChange={(e) => handleInputChange('coinsFrequency', parseInt(e.target.value) || 10)}
-                          min="1"
-                          max="60"
-                          style={{
-                            width: '60px',
-                            padding: '0.25rem',
-                            border: `1px solid ${currentTheme.border}`,
-                            borderRadius: '0.25rem',
-                            fontSize: '0.75rem',
-                            backgroundColor: currentTheme.inputBackground,
-                            color: currentTheme.textPrimary
-                          }}
-                        />
-                        <span style={{ fontSize: '0.75rem', color: currentTheme.textSecondary }}>
-                          midia exibidas
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div style={{
-              padding: '1.5rem',
-              borderTop: `1px solid ${currentTheme.border}`,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '0.75rem'
-            }}>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  resetForm();
-                  setEditingPanel(null);
-                  setError('');
-                }}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: 'transparent',
-                  color: currentTheme.textSecondary,
-                  border: `1px solid ${currentTheme.border}`,
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpdatePanel}
-                disabled={isSubmitting}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: currentTheme.primary,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  opacity: isSubmitting ? 0.7 : 1,
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div style={{
-                      width: '1rem',
-                      height: '1rem',
-                      border: '2px solid transparent',
-                      borderTop: '2px solid white',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-check-circle"></i>
-                    Salvar Alterações
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal Excluir Painel */}
       {showDeleteModal && (

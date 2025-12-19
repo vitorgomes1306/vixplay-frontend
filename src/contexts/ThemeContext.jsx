@@ -33,6 +33,11 @@ export const ThemeProvider = ({ children }) => {
       background: '#f9fafb',
       cardBackground: '#ffffff',
       sidebarBackground: '#ffffff',
+      // Inputs
+      inputBackground: '#ffffff',
+      inputText: '#1f2937',
+      inputBorder: '#e5e7eb',
+      inputPlaceholder: '#9ca3af',
       
       // Text colors
       textPrimary: '#1f2937',
@@ -48,6 +53,9 @@ export const ThemeProvider = ({ children }) => {
       buttonPrimaryHover: '#2563eb',
       buttonDanger: '#ef4444',
       buttonDangerHover: '#dc2626',
+      // Secondary surfaces/buttons
+      secondary: '#f3f4f6',
+      hoverBackground: '#e5e7eb',
       
       // Primary colors
       primary: '#3b82f6',
@@ -68,6 +76,11 @@ export const ThemeProvider = ({ children }) => {
       background: '#111827',
       cardBackground: '#1f2937',
       sidebarBackground: '#1f2937',
+      // Inputs
+      inputBackground: '#111827',
+      inputText: '#f9fafb',
+      inputBorder: '#374151',
+      inputPlaceholder: '#9ca3af',
       
       // Text colors
       textPrimary: '#f9fafb',
@@ -83,6 +96,9 @@ export const ThemeProvider = ({ children }) => {
       buttonPrimaryHover: '#2563eb',
       buttonDanger: '#ef4444',
       buttonDangerHover: '#dc2626',
+      // Secondary surfaces/buttons
+      secondary: '#374151',
+      hoverBackground: '#4b5563',
       
       // Primary colors
       primary: '#60a5fa',

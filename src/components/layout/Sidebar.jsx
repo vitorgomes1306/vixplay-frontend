@@ -5,8 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getAvatarUrl } from '../../utils/avatarUtils';
 import Logo1 from '../../assets/img/vixplay1.png';
 import Logo2 from '../../assets/img/vixplay2.png';
-import LogoAltersoft1 from '../../assets/img/altersoft1.png';
-import LogoAltersoft2 from '../../assets/img/altersoft2.png';
+import LogoAltersoft1 from '../../assets/img/altersoft_logo_light.png';
+import LogoAltersoft2 from '../../assets/img/altersoft_logo_dark.png';
 import './Sidebar.css';
 
 const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
@@ -380,7 +380,7 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
         }}>
           <div>
           {window.innerWidth > 768 && !isCollapsed && (
-            <a href="https://www.altersot.dev.br" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.altersoft.dev.br" target="_blank" rel="noopener noreferrer">
               <img src={isDark ? LogoAltersoft2 : LogoAltersoft1} alt="Sistema desenvolvido por Altersoft" style={{ width: '100px', height: 'auto' }} />
             </a>
             

@@ -164,29 +164,29 @@ const Clients = () => {
 
   // Função para formatar telefone fixo (99) 9999-9999
   const formatPhone = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length === 10) {
-      return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    const numbers = String(value ?? '').replace(/\D/g, '');
+    if (numbers.length >= 10) {
+      return numbers.slice(0, 10).replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
     }
-    return numbers.slice(0, 10);
+    return numbers;
   };
 
   // Função para formatar celular (99) 99999-9999
   const formatCellphone = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length === 11) {
-      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    const numbers = String(value ?? '').replace(/\D/g, '');
+    if (numbers.length >= 11) {
+      return numbers.slice(0, 11).replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     }
-    return numbers.slice(0, 11);
+    return numbers;
   };
 
   // Função para formatar CEP
   const formatCep = (value) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length === 8) {
-      return numbers.replace(/(\d{5})(\d{3})/, '$1-$2');
+    const numbers = String(value ?? '').replace(/\D/g, '');
+    if (numbers.length >= 8) {
+      return numbers.slice(0, 8).replace(/(\d{5})(\d{3})/, '$1-$2');
     }
-    return numbers.slice(0, 8);
+    return numbers;
   };
 
   // Função para buscar campanhas do cliente
@@ -307,6 +307,10 @@ const Clients = () => {
     setError('');
 
     try {
+      // Sanitizar telefones para apenas dígitos, conforme muitos backends esperam
+      const sanitizedPhone = formData.phone ? formData.phone.replace(/\D/g, '') : null;
+      const sanitizedCellphone = formData.cellphone ? formData.cellphone.replace(/\D/g, '') : null;
+
       const clientData = {
         name: formData.name,
         cpfCnpj: formData.cpfCnpj,
@@ -660,6 +664,10 @@ const Clients = () => {
                       <div style={styles.viewField}>
                         <label style={styles.viewLabel}>Telefone:</label>
                         <span style={styles.viewValue}>{formatPhone(selectedClient?.phone || '')}</span>
+                      </div>
+                      <div style={styles.viewField}>
+                        <label style={styles.viewLabel}>Celular:</label>
+                        <span style={styles.viewValue}>{formatCellphone(selectedClient?.cellphone || '')}</span>
                       </div>
                       <div style={styles.viewField}>
                         <label style={styles.viewLabel}>Endereço:</label>
@@ -1024,7 +1032,7 @@ const getStyles = (currentTheme) => ({
   title: {
     fontSize: '32px',
     fontWeight: '700',
-    color: currentTheme.text || '#1e293b',
+    color: currentTheme.textPrimary,
     margin: '0 0 8px 0',
     display: 'flex',
     alignItems: 'center',
@@ -1032,12 +1040,12 @@ const getStyles = (currentTheme) => ({
   },
   
   titleIcon: {
-    color: currentTheme.primary || '#3b82f6'
+    color: currentTheme.primary
   },
   
   subtitle: {
     fontSize: '16px',
-    color: currentTheme.textSecondary || '#64748b',
+    color: currentTheme.textSecondary,
     margin: 0
   },
   
@@ -1057,21 +1065,23 @@ const getStyles = (currentTheme) => ({
   searchIcon: {
     position: 'absolute',
     left: '12px',
-    color: '#64748b',
+    color: currentTheme.textSecondary,
     zIndex: 1
   },
   
   searchInput: {
     padding: '12px 12px 12px 44px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${currentTheme.inputBorder || currentTheme.border}`,
     borderRadius: '8px',
     fontSize: '14px',
     width: '300px',
     outline: 'none',
     transition: 'all 0.2s',
+    backgroundColor: currentTheme.inputBackground,
+    color: currentTheme.inputText || currentTheme.textPrimary,
     ':focus': {
-      borderColor: '#3b82f6',
-      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+      borderColor: currentTheme.primary,
+      boxShadow: `0 0 0 3px ${currentTheme.primary}20`
     }
   },
   
@@ -1091,8 +1101,8 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     gap: '8px',
     padding: '12px 24px',
-    backgroundColor: '#3b82f6',
-    color: 'white',
+    backgroundColor: currentTheme.primary,
+    color: currentTheme.buttonText || '#ffffff',
     border: 'none',
     borderRadius: '8px',
     fontSize: '14px',
@@ -1100,7 +1110,7 @@ const getStyles = (currentTheme) => ({
     cursor: 'pointer',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#2563eb'
+      backgroundColor: currentTheme.primaryHover || currentTheme.primary
     }
   },
   
@@ -1116,15 +1126,15 @@ const getStyles = (currentTheme) => ({
   },
   
   alertError: {
-    backgroundColor: '#fef2f2',
-    color: '#dc2626',
-    border: '1px solid #fecaca'
+    backgroundColor: `${currentTheme.danger}20`,
+    color: currentTheme.danger,
+    border: `1px solid ${currentTheme.danger}40`
   },
   
   alertSuccess: {
-    backgroundColor: '#f0fdf4',
-    color: '#16a34a',
-    border: '1px solid #bbf7d0'
+    backgroundColor: `${currentTheme.success}20`,
+    color: currentTheme.success,
+    border: `1px solid ${currentTheme.success}40`
   },
   
   statsGrid: {
@@ -1149,8 +1159,8 @@ const getStyles = (currentTheme) => ({
     width: '48px',
     height: '48px',
     borderRadius: '8px',
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    color: '#3b82f6',
+    backgroundColor: `${currentTheme.primary}20`,
+    color: currentTheme.primary,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -1228,13 +1238,13 @@ const getStyles = (currentTheme) => ({
   },
   
   statusActive: {
-    backgroundColor: '#dcfce7',
-    color: '#16a34a'
+    backgroundColor: `${currentTheme.success}20`,
+    color: currentTheme.success
   },
   
   statusInactive: {
-    backgroundColor: '#fef2f2',
-    color: '#dc2626'
+    backgroundColor: `${currentTheme.danger}20`,
+    color: currentTheme.danger
   },
   
   actionButtons: {
@@ -1254,26 +1264,26 @@ const getStyles = (currentTheme) => ({
   },
   
   viewButton: {
-    backgroundColor: '#f3f4f6',
-    color: '#6b7280',
+    backgroundColor: `${currentTheme.info}20`,
+    color: currentTheme.info,
     ':hover': {
-      backgroundColor: '#e5e7eb'
+      backgroundColor: `${currentTheme.info}30`
     }
   },
   
   editButton: {
-    backgroundColor: '#dbeafe',
-    color: '#3b82f6',
+    backgroundColor: `${currentTheme.primary}20`,
+    color: currentTheme.primary,
     ':hover': {
-      backgroundColor: '#bfdbfe'
+      backgroundColor: `${currentTheme.primary}30`
     }
   },
   
   deleteButton: {
-    backgroundColor: '#fef2f2',
-    color: '#dc2626',
+    backgroundColor: `${currentTheme.danger}20`,
+    color: currentTheme.danger,
     ':hover': {
-      backgroundColor: '#fecaca'
+      backgroundColor: `${currentTheme.danger}30`
     }
   },
   
@@ -1283,14 +1293,14 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: '64px',
-    color: '#64748b'
+    color: currentTheme.textSecondary
   },
   
   spinner: {
     width: '32px',
     height: '32px',
-    border: '3px solid #f3f4f6',
-    borderTop: '3px solid #3b82f6',
+    border: `3px solid ${currentTheme.borderLight || currentTheme.border}`,
+    borderTop: `3px solid ${currentTheme.primary}`,
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     marginBottom: '16px'
@@ -1302,7 +1312,7 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: '64px',
-    color: '#64748b'
+    color: currentTheme.textSecondary
   },
   
   emptyIcon: {
@@ -1325,7 +1335,7 @@ const getStyles = (currentTheme) => ({
   },
   
   modal: {
-    backgroundColor: 'white',
+    backgroundColor: currentTheme.cardBackground,
     borderRadius: '12px',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
     width: '100%',
@@ -1341,13 +1351,13 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '24px',
-    borderBottom: '1px solid #e2e8f0'
+    borderBottom: `1px solid ${currentTheme.border}`
   },
   
   modalTitle: {
     fontSize: '20px',
     fontWeight: '600',
-    color: '#1e293b',
+    color: currentTheme.textPrimary,
     margin: 0,
     display: 'flex',
     alignItems: 'center',
@@ -1360,10 +1370,10 @@ const getStyles = (currentTheme) => ({
     backgroundColor: 'transparent',
     cursor: 'pointer',
     borderRadius: '6px',
-    color: '#64748b',
+    color: currentTheme.textSecondary,
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#f1f5f9'
+      backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground
     }
   },
   
@@ -1394,19 +1404,21 @@ const getStyles = (currentTheme) => ({
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151'
+    color: currentTheme.textPrimary
   },
   
   input: {
     padding: '12px 16px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${currentTheme.inputBorder || currentTheme.border}`,
     borderRadius: '8px',
     fontSize: '14px',
     outline: 'none',
     transition: 'all 0.2s',
+    backgroundColor: currentTheme.inputBackground,
+    color: currentTheme.inputText || currentTheme.textPrimary,
     ':focus': {
-      borderColor: '#3b82f6',
-      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+      borderColor: currentTheme.primary,
+      boxShadow: `0 0 0 3px ${currentTheme.primary}20`
     }
   },
   
@@ -1415,7 +1427,7 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     gap: '8px',
     fontSize: '14px',
-    color: '#374151',
+    color: currentTheme.textPrimary,
     cursor: 'pointer'
   },
   
@@ -1440,12 +1452,12 @@ const getStyles = (currentTheme) => ({
   viewLabel: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#6b7280'
+    color: currentTheme.textSecondary
   },
   
   viewValue: {
     fontSize: '16px',
-    color: '#1f2937'
+    color: currentTheme.textPrimary
   },
   
   modalFooter: {
@@ -1454,21 +1466,21 @@ const getStyles = (currentTheme) => ({
     gap: '12px',
     marginTop: '24px',
     paddingTop: '24px',
-    borderTop: '1px solid #e2e8f0'
+    borderTop: `1px solid ${currentTheme.border}`
   },
   
   cancelButton: {
     padding: '12px 24px',
-    border: '1px solid #d1d5db',
-    backgroundColor: 'white',
-    color: '#374151',
+    border: `1px solid ${currentTheme.border}`,
+    backgroundColor: currentTheme.cardBackground,
+    color: currentTheme.textPrimary,
     borderRadius: '8px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#f9fafb'
+      backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground
     }
   },
   
@@ -1477,8 +1489,8 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     gap: '8px',
     padding: '12px 24px',
-    backgroundColor: '#3b82f6',
-    color: 'white',
+    backgroundColor: currentTheme.primary,
+    color: currentTheme.buttonText || '#ffffff',
     border: 'none',
     borderRadius: '8px',
     fontSize: '14px',
@@ -1486,15 +1498,15 @@ const getStyles = (currentTheme) => ({
     cursor: 'pointer',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#2563eb'
+      backgroundColor: currentTheme.primaryHover || currentTheme.primary
     }
   },
   
   submitButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: currentTheme.borderLight || '#9ca3af',
     cursor: 'not-allowed',
     ':hover': {
-      backgroundColor: '#9ca3af'
+      backgroundColor: currentTheme.borderLight || '#9ca3af'
     }
   },
   
@@ -1509,7 +1521,7 @@ const getStyles = (currentTheme) => ({
 
   // Estilos do Modal Bootstrap
   bootstrapModal: {
-    backgroundColor: 'white',
+    backgroundColor: currentTheme.cardBackground,
     borderRadius: '8px',
     boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
     width: '100%',
@@ -1523,14 +1535,14 @@ const getStyles = (currentTheme) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '16px 20px',
-    borderBottom: '1px solid #dee2e6',
-    backgroundColor: '#f8f9fa'
+    borderBottom: `1px solid ${currentTheme.border}`,
+    backgroundColor: currentTheme.cardBackground
   },
 
   bootstrapModalTitle: {
     fontSize: '18px',
     fontWeight: '600',
-    color: '#dc3545',
+    color: currentTheme.danger,
     margin: 0,
     display: 'flex',
     alignItems: 'center'
@@ -1541,12 +1553,12 @@ const getStyles = (currentTheme) => ({
     border: 'none',
     fontSize: '20px',
     cursor: 'pointer',
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     padding: '4px',
     borderRadius: '4px',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#e9ecef'
+      backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground
     }
   },
 
@@ -1557,7 +1569,7 @@ const getStyles = (currentTheme) => ({
   },
 
   warningText: {
-    color: '#dc3545',
+    color: currentTheme.danger,
     fontSize: '13px',
     marginTop: '8px',
     marginBottom: 0
@@ -1568,46 +1580,46 @@ const getStyles = (currentTheme) => ({
     justifyContent: 'flex-end',
     gap: '12px',
     padding: '16px 20px',
-    borderTop: '1px solid #dee2e6',
-    backgroundColor: '#f8f9fa'
+    borderTop: `1px solid ${currentTheme.border}`,
+    backgroundColor: currentTheme.cardBackground
   },
 
   bootstrapCancelButton: {
     padding: '8px 16px',
-    border: '1px solid #6c757d',
+    border: `1px solid ${currentTheme.border}`,
     backgroundColor: 'transparent',
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '500',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#6c757d',
-      color: 'white'
+      backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground,
+      color: currentTheme.textPrimary
     }
   },
 
   bootstrapDeleteButton: {
     padding: '8px 16px',
-    border: '1px solid #dc3545',
-    backgroundColor: '#dc3545',
-    color: 'white',
+    border: `1px solid ${currentTheme.danger}`,
+    backgroundColor: currentTheme.danger,
+    color: currentTheme.buttonText || '#ffffff',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '500',
     transition: 'all 0.2s',
     ':hover': {
-      backgroundColor: '#c82333',
-      borderColor: '#bd2130'
+      backgroundColor: currentTheme.danger,
+      borderColor: currentTheme.danger
     }
   },
 
   // Estilos das abas do modal de visualização
   tabNavigation: {
     display: 'flex',
-    borderBottom: '1px solid #dee2e6',
+    borderBottom: `1px solid ${currentTheme.border}`,
     marginBottom: '20px'
   },
 
@@ -1615,7 +1627,7 @@ const getStyles = (currentTheme) => ({
     padding: '12px 16px',
     border: 'none',
     backgroundColor: 'transparent',
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '500',
@@ -1624,15 +1636,15 @@ const getStyles = (currentTheme) => ({
     borderBottom: '2px solid transparent',
     transition: 'all 0.2s',
     ':hover': {
-      color: '#495057',
-      backgroundColor: '#f8f9fa'
+      color: currentTheme.textPrimary,
+      backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground
     }
   },
 
   tabButtonActive: {
-    color: '#007bff',
-    borderBottomColor: '#007bff',
-    backgroundColor: '#f8f9fa'
+    color: currentTheme.primary,
+    borderBottomColor: currentTheme.primary,
+    backgroundColor: currentTheme.hoverBackground || currentTheme.cardBackground
   },
 
   // Estilos da seção de campanhas
@@ -1647,10 +1659,10 @@ const getStyles = (currentTheme) => ({
   },
 
   campaignCard: {
-    border: '1px solid #dee2e6',
+    border: `1px solid ${currentTheme.border}`,
     borderRadius: '8px',
     padding: '16px',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: currentTheme.cardBackground,
     transition: 'all 0.2s',
     ':hover': {
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
@@ -1667,7 +1679,7 @@ const getStyles = (currentTheme) => ({
   campaignTitle: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#212529',
+    color: currentTheme.textPrimary,
     margin: 0,
     flex: 1
   },
@@ -1681,38 +1693,38 @@ const getStyles = (currentTheme) => ({
   },
 
   campaignStatusActive: {
-    backgroundColor: '#d4edda',
-    color: '#155724'
+    backgroundColor: `${currentTheme.success}20`,
+    color: currentTheme.success
   },
 
   campaignStatusInactive: {
-    backgroundColor: '#f8d7da',
-    color: '#721c24'
+    backgroundColor: `${currentTheme.danger}20`,
+    color: currentTheme.danger
   },
 
   campaignDescription: {
     fontSize: '14px',
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     marginBottom: '12px',
     lineHeight: '1.4'
   },
 
   campaignDates: {
     fontSize: '13px',
-    color: '#495057',
+    color: currentTheme.textSecondary,
     display: 'flex',
     alignItems: 'center'
   },
 
   loadingText: {
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     fontSize: '14px',
     textAlign: 'center',
     margin: 0
   },
 
   emptyText: {
-    color: '#6c757d',
+    color: currentTheme.textSecondary,
     fontSize: '14px',
     textAlign: 'center',
     marginTop: '12px'
