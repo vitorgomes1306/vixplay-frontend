@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
 
@@ -7,6 +7,7 @@ const Panels = () => {
   const { currentTheme } = useTheme();
   const styles = getStyles(currentTheme);
   const navigate = useNavigate();
+  const location = useLocation();
   const [panels, setPanels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,6 +41,21 @@ const Panels = () => {
   useEffect(() => {
     fetchPanels();
   }, []);
+
+  // Abrir modal de criar painel automaticamente quando vier com parâmetro/estado
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const shouldOpen = params.get('add') === '1' || params.get('novo') === '1' || params.get('create') === '1';
+      const openState = !!(location.state && (location.state.openAdd || location.state.add || location.state.create));
+      if (shouldOpen || openState) {
+        setShowCreateModal(true);
+        if (openState) {
+          navigate(location.pathname + location.search, { replace: true, state: {} });
+        }
+      }
+    } catch {}
+  }, [location, navigate]);
 
   const fetchPanels = async () => {
     try {

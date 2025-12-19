@@ -21,6 +21,9 @@ import Admin from './pages/Admin'; // Página de administração
 import GlobalMediasAdmin from './pages/GlobalMediasAdmin'; // CRUD de mídias globais (Admin)
 import BatchLicense from './pages/BatchLicense'; // Página de licenciamento em lote
 import LytexPayment from './pages/LytexPayment'; // Página de pagamento Lytex
+import UtilsRss from './pages/UtilsRss'; // Utilidades - Teste de RSS
+import UtilsShortener from './pages/UtilsShortener'; // Utilidades - Encurtador de Link
+import UtilsQrCode from './pages/UtilsQrCode'; // Utilidades - Gerador de QR Code
 import Erro404 from '../src/assets/img/404.webp'; // Imagem de erro 404
 
 import './index.css';
@@ -119,6 +122,21 @@ function App() {
             <Route path="/integrations" element={
               <ProtectedRoute>
                 <Layout><Integrations /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/utils/rss" element={
+              <ProtectedRoute>
+                <Layout><UtilsRss /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/utils/shortener" element={
+              <ProtectedRoute>
+                <Layout><UtilsShortener /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/utils/qrcode" element={
+              <ProtectedRoute>
+                <Layout><UtilsQrCode /></Layout>
               </ProtectedRoute>
             } />
           

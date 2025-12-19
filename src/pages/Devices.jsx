@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
 
@@ -7,6 +7,7 @@ const Devices = () => {
   const { currentTheme } = useTheme();
   const styles = getStyles(currentTheme);
   const navigate = useNavigate();
+  const location = useLocation();
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,6 +48,23 @@ const Devices = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Abrir modal automaticamente quando vier com parâmetro/estado
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const shouldOpen = params.get('add') === '1' || params.get('novo') === '1';
+      const openState = !!(location.state && (location.state.openAdd || location.state.add));
+      if (shouldOpen || openState) {
+        setShowModal(true);
+        // Limpar o state para não reabrir em navegações subsequentes
+        if (openState) {
+          navigate(location.pathname + location.search, { replace: true, state: {} });
+        }
+      }
+    } catch {}
+    // Reagir a mudanças na URL/estado
+  }, [location, navigate]);
 
   const [formData, setFormData] = useState({
     deviceKey: ['', '', '', '', '', ''],

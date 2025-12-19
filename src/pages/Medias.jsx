@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
 
 const Medias = () => {
   const { currentTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const storedUser = localStorage.getItem('vixplay_user');
   const appUser = storedUser ? JSON.parse(storedUser) : null;
   const isAdmin = !!(appUser?.isAdmin || appUser?.role === 'ADMIN' || appUser?.role === 'admin' || appUser?.profile === 'admin');
@@ -52,6 +55,21 @@ const Medias = () => {
     fetchMedias();
     fetchPanels();
   }, []);
+
+  // Abrir modal de upload automaticamente quando vier com parâmetro/estado
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const shouldOpen = params.get('add') === '1' || params.get('upload') === '1' || params.get('novo') === '1';
+      const openState = !!(location.state && (location.state.openAdd || location.state.add || location.state.upload));
+      if (shouldOpen || openState) {
+        setShowUploadModal(true);
+        if (openState) {
+          navigate(location.pathname + location.search, { replace: true, state: {} });
+        }
+      }
+    } catch {}
+  }, [location, navigate]);
 
   useEffect(() => {
     filterMedias();

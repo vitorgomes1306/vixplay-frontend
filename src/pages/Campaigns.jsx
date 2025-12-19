@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
 
 const Campaigns = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Estados principais
   const [campaigns, setCampaigns] = useState([]);
@@ -169,6 +170,17 @@ const Campaigns = () => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  // Abrir modal de criação ao chegar com parâmetro ou state
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const addParam = params.get('add') || params.get('novo') || params.get('create');
+    const shouldOpen = addParam === '1' || location.state?.openAdd === true;
+    if (shouldOpen) {
+      resetForm();
+      setShowCreateModal(true);
+    }
+  }, [location.search, location.state]);
 
   const fetchInitialData = async () => {
     try {

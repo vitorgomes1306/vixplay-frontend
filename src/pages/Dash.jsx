@@ -528,7 +528,7 @@ function Dash() {
               <img src={WelcomeImg} alt="Bem-vindo" style={{ maxWidth: '100%', height: 'auto' }} />
             </div>
             <h2 style={{ marginTop: 0 }}>Por que preciso completar meu cadastro?</h2>
-            <p>Para que todas as funcionalidades do sistema funcionem corretamente, é necessário que você preencha alguns campos do seu perfil como nome da empresa, dia de vencimento, etc.</p>
+            <p>Para que todas os recusros do sistema funcionem corretamente, é necessário que você preencha alguns campos do seu perfil como nome da empresa, logomarca, dia de vencimento, etc.</p>
             <a href="profile" rel="noopener noreferrer" style={{ color: '#2563eb', textDecoration: 'underline' }}>Ir para perfil</a>
             <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center' }}>
               <input
@@ -786,7 +786,7 @@ function Dash() {
           gap: '1rem'
         }}>
           <button 
-            onClick={() => setShowDeviceModal(true)}
+            onClick={() => navigate('/devices?add=1')}
             style={{
             padding: '1rem',
             backgroundColor: '#3b82f6',
@@ -800,7 +800,7 @@ function Dash() {
             Adicionar Dispositivo
           </button>
           <button 
-            onClick={() => setShowPanelModal(true)}
+            onClick={() => navigate('/panels?add=1')}
             style={{
             padding: '1rem',
             backgroundColor: '#10b981',
@@ -814,7 +814,7 @@ function Dash() {
             Criar Painel
           </button>
           <button 
-            onClick={() => navigate('/medias')}
+            onClick={() => navigate('/medias?add=1')}
             style={{
             padding: '1rem',
             backgroundColor: '#f59e0b',
@@ -828,7 +828,7 @@ function Dash() {
             Upload de Mídia
           </button>
           <button 
-            onClick={() => navigate('/campaigns')}
+            onClick={() => navigate('/campaigns?add=1')}
             style={{
             padding: '1rem',
             backgroundColor: '#ef4444',

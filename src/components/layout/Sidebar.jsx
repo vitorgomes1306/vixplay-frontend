@@ -12,6 +12,7 @@ import './Sidebar.css';
 const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [utilsOpen, setUtilsOpen] = useState(false);
   const { currentTheme, isDark } = useTheme();
   const { user } = useAuth();
   const isVipClient = !!user?.vipClient;
@@ -131,7 +132,8 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
           borderBottom: `1px solid ${currentTheme.border}`,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: isCollapsed ? 'center' : 'space-between'
+          justifyContent: 'center',
+          position: 'relative'
         }}>
           {!isCollapsed && (
             <h2 style={{ 
@@ -144,14 +146,25 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
                   src={getAvatarUrl(user.picture)} 
                   alt="User Avatar" 
                   style={{ 
-                    width: '100%', 
+                    width: '100%',
                     height: 'auto',
                     maxHeight: '60px',
                     objectFit: 'contain',
+                    display: 'block',
+                    margin: '0 auto'
                   }} 
                 />
               ) : (
-                <img src={isDark ? Logo1 : Logo2} alt="Vix Play" style={{ width: '100%', height: 'auto' }} />
+                <img 
+                  src={isDark ? Logo1 : Logo2} 
+                  alt="Vix Play" 
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto',
+                    display: 'block',
+                    margin: '0 auto'
+                  }} 
+                />
               )}
             </h2>
           )}
@@ -164,7 +177,10 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
               fontSize: '1.2rem',
               cursor: 'pointer',
               padding: '0.25rem',
-              display: window.innerWidth <= 768 ? 'none' : 'block'
+              display: window.innerWidth <= 768 ? 'none' : 'block',
+              position: 'absolute',
+              right: '0.75rem',
+              top: '0.75rem'
             }}
           >
             <i className={`bi ${isCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`}></i>
@@ -223,6 +239,93 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
                     aria-label="Recurso exclusivo para clientes VIP"
                   ></i>
                 </div>
+              );
+            }
+
+            // Custom rendering for Utils submenu
+            if (item.path === '/utils') {
+              const parentActive = location.pathname.startsWith('/utils');
+              const parentStyles = {
+                ...commonStyles,
+                color: parentActive ? currentTheme.primary : currentTheme.textSecondary,
+                backgroundColor: parentActive ? currentTheme.primaryLight : 'transparent',
+                borderLeft: parentActive ? `3px solid ${currentTheme.primary}` : '3px solid transparent'
+              };
+
+              const subItemBase = {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                padding: '0.5rem 1rem 0.5rem 2.25rem',
+                color: currentTheme.textSecondary,
+                backgroundColor: 'transparent',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+                fontSize: '0.85rem'
+              };
+
+              const SubLink = ({ to, label, icon }) => {
+                const active = location.pathname === to;
+                const styles = {
+                  ...subItemBase,
+                  color: active ? currentTheme.primary : currentTheme.textSecondary,
+                  backgroundColor: active ? currentTheme.primaryLight : 'transparent',
+                  borderLeft: active ? `3px solid ${currentTheme.primary}` : '3px solid transparent'
+                };
+                return (
+                  <Link to={to} style={styles} key={to} onClick={handleMobileClose} title={label}>
+                    <i className={`bi ${icon}`} style={{ fontSize: '1rem', marginRight: '0.5rem', minWidth: '16px' }}></i>
+                    <span style={{ fontSize: '0.85rem', fontFamily: 'Poppins, sans-serif', fontWeight: 500 }}>{label}</span>
+                  </Link>
+                );
+              };
+
+              return (
+                <>
+                  <div
+                    key="utils-parent"
+                    style={parentStyles}
+                    onClick={() => !isCollapsed && setUtilsOpen((prev) => !prev)}
+                    title={isCollapsed ? item.name : ''}
+                    onMouseEnter={(e) => {
+                      if (!parentActive) {
+                        e.target.style.backgroundColor = currentTheme.borderLight;
+                        e.target.style.color = currentTheme.textPrimary;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!parentActive) {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.color = currentTheme.textSecondary;
+                      }
+                    }}
+                  >
+                    <i className={`bi ${item.icon}`} style={{
+                      fontSize: '1.2rem',
+                      marginRight: isCollapsed ? 0 : '0.75rem',
+                      minWidth: '20px'
+                    }}></i>
+                    {!isCollapsed && (
+                      <span style={{
+                        fontSize: '0.9rem',
+                        fontFamily: 'Poppins, sans-serif',
+                        fontWeight: '500'
+                      }}>
+                        Utilidades
+                      </span>
+                    )}
+                    {!isCollapsed && (
+                      <i className={`bi ${utilsOpen ? 'bi-chevron-up' : 'bi-chevron-down'}`} style={{ marginLeft: 'auto' }}></i>
+                    )}
+                  </div>
+                  {!isCollapsed && utilsOpen && (
+                    <div key="utils-submenu" style={{}}>
+                      <SubLink to="/utils/rss" label="Teste de RSS" icon="bi-rss" />
+                      <SubLink to="/utils/shortener" label="Encurtador de Link" icon="bi-link-45deg" />
+                      <SubLink to="/utils/qrcode" label="Gerador de QR Code" icon="bi-qr-code" />
+                    </div>
+                  )}
+                </>
               );
             }
 

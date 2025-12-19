@@ -3,17 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { getAvatarUrl } from '../../utils/avatarUtils';
+import { getAvatarUrl, updateUserAvatar } from '../../utils/avatarUtils';
+import { apiService } from '../../services/api';
 import LogoutModal from '../ui/LogoutModal';
 
 const Layout = ({ children }) => {
   const { currentTheme, toggleTheme, isDark } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarHidden, setSidebarHidden] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [checkedAvatar, setCheckedAvatar] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -32,6 +34,31 @@ const Layout = ({ children }) => {
 
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Checa e atualiza a foto do usuário globalmente para todas as páginas
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      if (!user || checkedAvatar) return;
+      // Se já temos a foto, não precisa buscar
+      if (user.picture && user.picture !== '0' && user.picture !== 'null') {
+        setCheckedAvatar(true);
+        return;
+      }
+      try {
+        const res = await apiService.getProfile();
+        const picturePath = res?.data?.picture;
+        if (picturePath) {
+          updateUserAvatar(updateUser, picturePath);
+        }
+      } catch (err) {
+        // Silencia erros para não impactar navegação
+        // console.warn('Falha ao obter foto do perfil:', err);
+      } finally {
+        setCheckedAvatar(true);
+      }
+    };
+    fetchUserAvatar();
+  }, [user, checkedAvatar, updateUser]);
 
   const handleSidebarToggle = (collapsed) => {
     setSidebarCollapsed(collapsed);

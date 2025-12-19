@@ -25,6 +25,8 @@ function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [lastCepLookup, setLastCepLookup] = useState('');
 
   const { currentTheme, isDark } = useTheme();
   const navigate = useNavigate();
@@ -35,6 +37,49 @@ function Register() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const sanitizeCep = (cep) => (cep || '').replace(/\D/g, '');
+
+  const lookupCep = async (rawCep) => {
+    const cep = sanitizeCep(rawCep);
+    if (cep.length !== 8 || cep === lastCepLookup) return;
+    setIsFetchingCep(true);
+    setError('');
+    try {
+      const res = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+      if (!res.ok) throw new Error('CEP não encontrado');
+      const data = await res.json();
+      setFormData(prev => ({
+        ...prev,
+        zipCode: prev.zipCode, // mantém o escrito
+        city: data.city || prev.city,
+        state: data.state || prev.state,
+        street: data.street || prev.street,
+        zone: data.neighborhood || prev.zone
+      }));
+      setLastCepLookup(cep);
+    } catch (err) {
+      // Não bloqueia fluxo, apenas informa erro se necessário
+      // Opcionalmente: setError('Não foi possível localizar o endereço pelo CEP');
+    } finally {
+      setIsFetchingCep(false);
+    }
+  };
+
+  const handleZipChange = (e) => {
+    handleChange(e);
+    const digits = sanitizeCep(e.target.value);
+    if (digits.length === 8) {
+      lookupCep(digits);
+    }
+  };
+
+  const handleZipBlur = (e) => {
+    const digits = sanitizeCep(e.target.value);
+    if (digits.length === 8) {
+      lookupCep(digits);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -288,10 +333,16 @@ function Register() {
                 type="text"
                 name="zipCode"
                 value={formData.zipCode}
-                onChange={handleChange}
+                onChange={handleZipChange}
+                onBlur={handleZipBlur}
                 style={inputStyle}
                 placeholder="00000-000"
               />
+              {isFetchingCep && (
+                <div style={{ color: currentTheme.textSecondary, fontSize: '0.8rem', marginTop: '-0.75rem', marginBottom: '0.75rem' }}>
+                  Buscando endereço pelo CEP...
+                </div>
+              )}
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', color: currentTheme.textPrimary, fontSize: '0.9rem', fontWeight: '500' }}>
