@@ -19,6 +19,9 @@ const Medias = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showAssociateModal, setShowAssociateModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [mediaToDelete, setMediaToDelete] = useState(null);
+  const [deletingMedia, setDeletingMedia] = useState(false);
   const [panels, setPanels] = useState([]);
   const [selectedPanel, setSelectedPanel] = useState('');
   const [selectedPanels, setSelectedPanels] = useState([]);
@@ -69,27 +72,32 @@ const Medias = () => {
   };
 
   // Função para excluir mídia
-  const handleDeleteMedia = async (media, event) => {
-    event.stopPropagation(); // Evita abrir o preview
+  const handleDeleteMedia = (media, event) => {
+    event.stopPropagation();
+    setMediaToDelete(media);
+    setShowDeleteModal(true);
+  };
 
-    const confirmDelete = window.confirm(
-      `Tem certeza que deseja excluir a mídia "${media.title || 'Sem título'}"?\n\nEsta ação não pode ser desfeita.`
-    );
+  const closeDeleteModal = () => {
+    if (deletingMedia) return;
+    setShowDeleteModal(false);
+    setMediaToDelete(null);
+  };
 
-    if (!confirmDelete) return;
-
+  const confirmDeleteMedia = async () => {
+    if (!mediaToDelete?.id) return;
     try {
+      setDeletingMedia(true);
       setError('');
-      await apiService.deleteMedia(media.id);
-      
-      // Recarregar lista de mídias
+      await apiService.deleteMedia(mediaToDelete.id);
       await fetchMedias();
-      
-      // Mostrar mensagem de sucesso (opcional)
-      console.log('Mídia excluída com sucesso');
+      setShowDeleteModal(false);
+      setMediaToDelete(null);
     } catch (err) {
       console.error('Erro ao excluir mídia:', err);
       setError('Erro ao excluir mídia. Tente novamente.');
+    } finally {
+      setDeletingMedia(false);
     }
   };
 
@@ -362,6 +370,24 @@ const Medias = () => {
     const file = e.target.files[0];
     if (file) {
       setUploadForm(prev => ({ ...prev, file }));
+
+      // Se for vídeo, tenta obter a duração automaticamente
+      if (file.type && file.type.startsWith('video/')) {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        const url = URL.createObjectURL(file);
+        video.src = url;
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(url);
+          const seconds = Math.round(video.duration || 0);
+          if (seconds > 0) {
+            setUploadForm(prev => ({ ...prev, duration: seconds }));
+          }
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(url);
+        };
+      }
     }
   };
 
@@ -1664,38 +1690,36 @@ const Medias = () => {
                 </button>
               </div>
               <form onSubmit={handleUploadSubmit}>
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '500',
-                    color: currentTheme.textPrimary
-                  }}>
-                    Título da Mídia
-                  </label>
-                  <input
-                    type="text"
-                    value={uploadMode === 'FILE' ? uploadForm.title : widgetForm.title}
-                    onChange={(e) => {
-                      if (uploadMode === 'FILE') {
-                        setUploadForm(prev => ({ ...prev, title: e.target.value }));
-                      } else {
+                {uploadMode === 'WIDGET' && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: currentTheme.textPrimary
+                    }}>
+                      Título da Mídia
+                    </label>
+                    <input
+                      type="text"
+                      value={widgetForm.title}
+                      onChange={(e) => {
                         setWidgetForm(prev => ({ ...prev, title: e.target.value }));
-                      }
-                    }}
-                    placeholder="Digite o título da mídia (opcional)"
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: `1px solid ${currentTheme.border}`,
-                      borderRadius: '0.375rem',
-                      backgroundColor: currentTheme.background,
-                      color: currentTheme.textPrimary,
-                      fontSize: '1rem'
-                    }}
-                  />
-                </div>
+                      }}
+                      placeholder="Digite o título da mídia (opcional)"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: `1px solid ${currentTheme.border}`,
+                        borderRadius: '0.375rem',
+                        backgroundColor: currentTheme.background,
+                        color: currentTheme.textPrimary,
+                        fontSize: '1rem'
+                      }}
+                    />
+                  </div>
+                )}
 
                 {uploadMode === 'FILE' && (
                   <div style={{ marginBottom: '1rem' }}>
@@ -1729,6 +1753,35 @@ const Medias = () => {
                     }}>
                       Tipos suportados: Imagens (JPG, PNG, GIF), Vídeos (MP4, AVI, MOV), Áudios (MP3, WAV), Documentos (PDF, DOC)
                       <br />Tamanho máximo: 100MB
+                    </div>
+                    {/* Título - após o arquivo para manter ordem desejada */}
+                    <div style={{ marginTop: '1rem' }}>
+                      <label style={{
+                        display: 'block',
+                        marginBottom: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: currentTheme.textPrimary
+                      }}>
+                        Título da Mídia
+                      </label>
+                      <input
+                        type="text"
+                        value={uploadForm.title}
+                        onChange={(e) => {
+                          setUploadForm(prev => ({ ...prev, title: e.target.value }));
+                        }}
+                        placeholder="Digite o título da mídia (opcional)"
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: `1px solid ${currentTheme.border}`,
+                          borderRadius: '0.375rem',
+                          backgroundColor: currentTheme.background,
+                          color: currentTheme.textPrimary,
+                          fontSize: '1rem'
+                        }}
+                      />
                     </div>
                   </div>
                 )}
@@ -1851,40 +1904,7 @@ const Medias = () => {
                   </div>
                 </div>
 
-                {isAdmin && (
-                  <div style={{ marginBottom: '1rem' }}>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      color: currentTheme.textPrimary
-                    }}>
-                      <input
-                        type="checkbox"
-                        checked={uploadMode === 'FILE' ? uploadForm.mediaGlobal : widgetForm.mediaGlobal}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          if (uploadMode === 'FILE') {
-                            setUploadForm(prev => ({ ...prev, mediaGlobal: checked }));
-                          } else {
-                            setWidgetForm(prev => ({ ...prev, mediaGlobal: checked }));
-                          }
-                        }}
-                        style={{ width: '1rem', height: '1rem' }}
-                      />
-                      MÍDIA GLOBAL
-                    </label>
-                    <div style={{
-                      fontSize: '0.75rem',
-                      color: currentTheme.textSecondary,
-                      marginTop: '0.25rem'
-                    }}>
-                      Quando marcado, esta mídia será criada como global (visível para todos).
-                    </div>
-                  </div>
-                )}
+                
 
                 {/* Barra de Progresso */}
                 {uploading && (
@@ -1958,6 +1978,107 @@ const Medias = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      {showDeleteModal && mediaToDelete && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: currentTheme.cardBackground,
+            borderRadius: '0.75rem',
+            width: '100%',
+            maxWidth: '480px',
+            border: `1px solid ${currentTheme.border}`,
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderBottom: `1px solid ${currentTheme.border}`,
+              padding: '0.75rem 1rem'
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: currentTheme.textPrimary
+              }}>Confirmar exclusão</h3>
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: currentTheme.textSecondary,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem'
+                }}
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
+            </div>
+
+            <div style={{ padding: '1rem' }}>
+              <p style={{ color: currentTheme.textSecondary, margin: 0 }}>
+                Tem certeza que deseja excluir a mídia <strong style={{ color: currentTheme.textPrimary }}>&quot;{mediaToDelete.title || 'Sem título'}&quot;</strong>?
+              </p>
+              <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: currentTheme.textSecondary }}>Esta ação não pode ser desfeita.</p>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'flex-end',
+              borderTop: `1px solid ${currentTheme.border}`,
+              padding: '0.75rem 1rem'
+            }}>
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '0.375rem',
+                  backgroundColor: 'transparent',
+                  color: currentTheme.textPrimary,
+                  cursor: 'pointer'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteMedia}
+                disabled={deletingMedia}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  backgroundColor: deletingMedia ? '#ef4444aa' : '#ef4444',
+                  color: 'white',
+                  cursor: deletingMedia ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                {deletingMedia ? 'Excluindo...' : 'Excluir'}
+              </button>
             </div>
           </div>
         </div>
