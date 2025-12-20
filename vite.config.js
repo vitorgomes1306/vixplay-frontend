@@ -21,12 +21,12 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/src/img/vix_icon.png',
+            src: 'public/icons/vix_icon.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/src/img/vix_icon.png',
+            src: 'public/icons/vix_icon.png',
             sizes: '512x512',
             type: 'image/png',
           },
