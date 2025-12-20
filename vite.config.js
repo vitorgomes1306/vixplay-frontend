@@ -7,7 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+
       strategies: 'generateSW',
+
+      filename: 'sw.js', // ← FORÇA O NOME DO ARQUIVO
 
       workbox: {
         navigateFallback: '/',
