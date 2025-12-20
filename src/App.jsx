@@ -25,6 +25,8 @@ import UtilsRss from './pages/UtilsRss'; // Utilidades - Teste de RSS
 import UtilsShortener from './pages/UtilsShortener'; // Utilidades - Encurtador de Link
 import UtilsQrCode from './pages/UtilsQrCode'; // Utilidades - Gerador de QR Code
 import Erro404 from '../src/assets/img/404.webp'; // Imagem de erro 404
+import InstallButton from './components/InstallButton'; // Botão de instalação PWA
+
 
 import './index.css';
 
@@ -163,11 +165,14 @@ function App() {
               </a>
             </div>
           } />
+          
         </Routes>
+         <InstallButton />
         </div>
         </Router>
       </AuthProvider>
     </ThemeProvider>
+    
   );
 }
 
