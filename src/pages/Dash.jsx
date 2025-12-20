@@ -576,7 +576,7 @@ function Dash() {
           color: currentTheme.textPrimary,
           margin: '0 0 0.5rem 0'
         }}>
-          Bem-vindo ao Vix Play
+          Bem-vindo ao Vix Play - Gestão de midia indoor
         </h1>
         <p style={{
           color: currentTheme.textSecondary,
