@@ -13,7 +13,8 @@ export default defineConfig({
       filename: 'sw.js', // ← FORÇA O NOME DO ARQUIVO
 
       workbox: {
-        navigateFallback: '/',
+        navigateFallback: '/index.html',
+        navigateFallbackAllowlist: [/^\/(?!api|private|public).*/],
       },
 
       manifest: {
