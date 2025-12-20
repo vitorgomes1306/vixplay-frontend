@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { registerSW } from 'virtual:pwa-register'
 
 registerSW({
+  immediate: true, // ← IMPORTANTE EM PRODUÇÃO
   onOfflineReady() {
     console.log('PWA pronto para uso offline')
   },

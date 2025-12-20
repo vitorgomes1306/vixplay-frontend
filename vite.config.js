@@ -7,8 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-
-      strategies: 'generateSW', // ← CRÍTICO
+      strategies: 'generateSW',
 
       workbox: {
         navigateFallback: '/',
@@ -38,8 +37,6 @@ export default defineConfig({
       },
     }),
   ],
-})
-
 
   server: {
     port: 7000,
