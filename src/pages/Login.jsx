@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
@@ -126,9 +127,57 @@ function Login() {
       } else {
         setError(response.data.message || 'Erro ao fazer login');
       }
-    } catch (err) {
+  } catch (err) {
       //console.error('Erro no login:', err);
       setError(err.response?.data?.message || 'Erro de conexão. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+  }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const credential = credentialResponse?.credential;
+      if (!credential) {
+        setError('Falha ao obter credencial do Google.');
+        setIsLoading(false);
+        return;
+      }
+      const response = await apiService.loginWithGoogle({ credential });
+      if (response.data?.token) {
+        const { token } = response.data;
+        try {
+          localStorage.setItem('vixplay_token', token);
+        } catch (_) {}
+        let profile = {};
+        try {
+          const profileRes = await apiService.getProfile();
+          profile = profileRes.data || {};
+        } catch (_) {
+          profile = {
+            id: response.data?.id,
+            name: response.data?.name,
+            email: response.data?.email,
+            isAdmin: response.data?.isAdmin,
+            vipClient: response.data?.vipClient
+          };
+        }
+        const user = {
+          id: profile?.id ?? response.data?.id,
+          name: profile?.name ?? response.data?.name,
+          email: profile?.email ?? response.data?.email,
+          isAdmin: normalizeIsAdmin(profile?.isAdmin ?? response.data?.isAdmin),
+          vipClient: !!(profile?.vipClient ?? response.data?.vipClient),
+        };
+        login(user, token);
+        navigate(from, { replace: true });
+      } else {
+        setError(response.data?.message || 'Erro ao fazer login com Google');
+      }
+    } catch (err) {
+      setError('Falha no login com Google.');
     } finally {
       setIsLoading(false);
     }
@@ -333,6 +382,23 @@ function Login() {
           >
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '1rem 0' }}>
+            <div style={{ height: '1px', backgroundColor: currentTheme.border, flex: 1 }} />
+            <span style={{ color: currentTheme.textSecondary, fontSize: '0.85rem' }}>ou</span>
+            <div style={{ height: '1px', backgroundColor: currentTheme.border, flex: 1 }} />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Falha no login com Google.')}
+              useOneTap
+              theme={isDark ? 'filled_black' : 'outline'}
+              shape="rectangular"
+              size="large"
+            />
+          </div>
 
           <div style={{
             textAlign: 'center',

@@ -7,6 +7,7 @@ const getConfig = () => {
     
     API_ENDPOINTS: {
       LOGIN: '/public/login',
+      GOOGLE_LOGIN: '/public/login/google',
       REGISTER: '/public/cadastro',
       DEVICES: '/private/devices',
       DEVICE: '/private/device',
@@ -143,6 +144,7 @@ export const apiService = {
   
   // Autenticação
   login: (credentials) => api.post(getConfig().API_ENDPOINTS.LOGIN, credentials),
+  loginWithGoogle: (payload) => api.post((getConfig().API_ENDPOINTS.GOOGLE_LOGIN || '/public/login/google'), payload),
   register: (userData) => api.post(getConfig().API_ENDPOINTS.REGISTER, userData),
   
   // Devices
