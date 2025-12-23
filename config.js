@@ -3,9 +3,9 @@ const APP_CONFIG = {
     // Determina automaticamente a URL base baseada no ambiente
     API_BASE_URL: (() => {
         // Verifica se está em produção
-        if (window.location.hostname === 'vixplay.altersoft.dev.br' || 
+        if (window.location.hostname === 'app.vixplay.altersoft.dev.br' || 
             window.location.hostname.includes('altersoft.dev.br')) {
-            return 'https://vixplay.altersoft.dev.br/api';
+            return 'https://app.vixplay.altersoft.dev.br/api';
         } else {
             // Ambiente de desenvolvimento
             // Base da API no desenvolvimento
