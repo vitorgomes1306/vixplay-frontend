@@ -50,6 +50,8 @@ const getConfig = () => {
       BATCH_LICENSE_PAYMENT: '/private/admin/batch-license/:id/payment',
       USER_DEVICES: '/private/admin/users/:id/devices',
       CONTACT: '/public/contact',
+      CHANGE_PASSWORD: '/public/change-password',
+      PASSWORD_RESET: '/public/password-reset',
       
       // Global Medias (Admin & Associations)
       GLOBAL_MEDIAS: '/private/global-medias',
@@ -64,7 +66,11 @@ const getConfig = () => {
 
 // Detectar ambiente e resolver baseURL para evitar CORS em desenvolvimento
 const isDev = import.meta.env?.DEV;
-const resolvedBaseURL = (import.meta.env.VITE_API_URL || (window.APP_CONFIG?.API_BASE_URL ?? ''));
+// Em desenvolvimento, usamos caminho relativo para aproveitar o proxy do Vite
+// Em produção, preferimos VITE_API_URL e, se não houver, APP_CONFIG.API_BASE_URL
+const resolvedBaseURL = isDev
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:4000')
+  : (import.meta.env.VITE_API_URL || (window.APP_CONFIG?.API_BASE_URL ?? ''));
 
 // Criar instância do axios
 const api = axios.create({
@@ -77,8 +83,19 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('vixplay_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      // Determinar caminho da URL para decidir se é rota pública
+      const base = resolvedBaseURL || window.location.origin;
+      const fullUrl = new URL(config.url, base);
+      const path = fullUrl.pathname || '';
+      const isPublic = path.startsWith('/public') || path.startsWith('/reset-password') || path.startsWith('/change-password');
+      if (token && !isPublic) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (_) {
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -94,10 +111,22 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado ou inválido
-      localStorage.removeItem('vixplay_token');
-      localStorage.removeItem('vixplay_user');
-      window.location.href = '/login';
+      // Evitar redirecionar para login em rotas públicas
+      try {
+        const base = resolvedBaseURL || window.location.origin;
+        const fullUrl = new URL(error?.config?.url || '', base);
+        const path = fullUrl.pathname || '';
+        const isPublic = path.startsWith('/public') || path.startsWith('/reset-password') || path.startsWith('/change-password');
+        if (!isPublic) {
+          localStorage.removeItem('vixplay_token');
+          localStorage.removeItem('vixplay_user');
+          window.location.href = '/login';
+        }
+      } catch (_) {
+        localStorage.removeItem('vixplay_token');
+        localStorage.removeItem('vixplay_user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -240,6 +269,33 @@ export const apiService = {
   
   // Contact
   sendContact: (data) => api.post(getConfig().API_ENDPOINTS.CONTACT, data),
+
+  // Password Reset
+  requestPasswordChange: (data) => api.post(getConfig().API_ENDPOINTS.PASSWORD_RESET || '/public/password-reset', data),
+  confirmPasswordReset: (data) => api.post(getConfig().API_ENDPOINTS.CHANGE_PASSWORD || '/public/change-password', data),
+  // Confirmação por email com fallback para prefixo /public
+  confirmPasswordResetByEmail: async (data) => {
+    try {
+      return await api.post('/reset-password/confirm-by-email', data);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        // Backend alternativo usando prefixo /public
+        return await api.post('/public/reset-password/confirm-by-email', data);
+      }
+      throw err;
+    }
+  },
+  // Confirmação por token com fallback sem prefixo /public
+  confirmPasswordResetByToken: async (data) => {
+    try {
+      return await api.post('/public/change-password', data);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        return await api.post('/change-password', data);
+      }
+      throw err;
+    }
+  },
   
   // System Config
   getSystemConfig: () => api.get(getConfig().API_ENDPOINTS.SYSTEM_CONFIG || '/private/system-config'),

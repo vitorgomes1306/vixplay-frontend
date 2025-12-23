@@ -24,6 +24,8 @@ import LytexPayment from './pages/LytexPayment'; // Página de pagamento Lytex
 import UtilsRss from './pages/UtilsRss'; // Utilidades - Teste de RSS
 import UtilsShortener from './pages/UtilsShortener'; // Utilidades - Encurtador de Link
 import UtilsQrCode from './pages/UtilsQrCode'; // Utilidades - Gerador de QR Code
+import ForgotPassword from './pages/ForgotPassword'; // Página pública de recuperação de senha
+import ChangePassword from './pages/ChangePassword'; // Página pública de alteração de senha
 import Erro404 from '../src/assets/img/404.webp'; // Imagem de erro 404
 import InstallButton from './components/InstallButton'; // Botão de instalação PWA
 
@@ -43,6 +45,8 @@ function App() {
             {/* Rotas públicas (sem sidebar) */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/change-password" element={<ChangePassword />} />
             
             {/* Rotas internas (com sidebar) - Protegidas */}
             <Route path="/dash" element={

@@ -45,6 +45,13 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Normaliza o campo "Tipo de Pessoa" para valores válidos
+  const normalizePersonType = (value) => {
+    if (!value) return undefined;
+    const v = String(value).toLowerCase();
+    return v === 'pf' || v === 'pj' ? v : undefined;
+  };
+
   useEffect(() => {
     // Verificar se há parâmetro de aba na URL
     const urlParams = new URLSearchParams(location.search);
@@ -165,6 +172,8 @@ const UserProfile = () => {
       }
       const payload = {
         ...userData,
+        // Garante que o backend receba PF/PJ em maiúsculo ou não altere se inválido
+        type: normalizePersonType(userData.type),
         dayOfPayment:
           userData.dayOfPayment === '' || userData.dayOfPayment === undefined
             ? null
@@ -175,6 +184,8 @@ const UserProfile = () => {
       } else {
         await apiService.updateProfile(payload);
       }
+      // Recarrega os dados do perfil para refletir alterações
+      await loadUserData();
       setAlertMessage('Perfil atualizado com sucesso!');
       setAlertType('success');
       setShowAlert(true);
@@ -620,32 +631,21 @@ const UserProfile = () => {
                       cursor: 'not-allowed'
                     }}
                   />
-                </div>
-
-                {/* Cliente VIP (somente leitura) */}
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    fontWeight: '500',
-                    color: currentTheme.textPrimary,
+                  {/* Aviso para alteração de email via suporte */}
+                  <div style={{
+                    marginTop: '0.5rem',
+                    padding: '0.5rem 0.75rem',
+                    borderLeft: `3px solid ${currentTheme.primary}`,
+                    backgroundColor: currentTheme.cardBackground,
+                    color: currentTheme.textSecondary,
+                    fontSize: '0.700rem',
                     fontFamily: 'Poppins, sans-serif'
                   }}>
-                    Cliente VIP
-                  </label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input
-                      type="checkbox"
-                      checked={!!userData.vipClient}
-                      readOnly
-                      disabled
-                      style={{ cursor: 'not-allowed' }}
-                    />
-                    <span style={{ color: currentTheme.textSecondary }}>
-                      {userData.vipClient ? 'Ativo' : 'Não ativo'}
-                    </span>
+                    Caso necessite alterar o email, solicite ao suporte: 
+                    <span style={{ fontWeight: 600, color: currentTheme.textPrimary }}> admin@altersoft.dev.br</span>
                   </div>
                 </div>
+                
 
                 {/* Celular */}
                 <div>
@@ -732,8 +732,8 @@ const UserProfile = () => {
                     }}
                   >
                     <option value="">Selecione...</option>
-                    <option value="PF">Pessoa Física</option>
-                    <option value="PJ">Pessoa Jurídica</option>
+                    <option value="pf">Pessoa Física</option>
+                    <option value="pj">Pessoa Jurídica</option>
                   </select>
                 </div>
               </div>

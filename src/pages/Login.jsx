@@ -270,6 +270,15 @@ function Login() {
               onBlur={(e) => e.target.style.borderColor = currentTheme.border}
               placeholder="••••••••"
             />
+            <div style={{ marginTop: '0.5rem', textAlign: 'right' }}>
+              <a
+                href="/forgot-password"
+                style={{ color: currentTheme.primary, textDecoration: 'underline', fontSize: '0.85rem' }}
+                onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }}
+              >
+                Esqueceu a senha?
+              </a>
+            </div>
           </div>
 
           <button

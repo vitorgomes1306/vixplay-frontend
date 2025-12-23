@@ -46,19 +46,13 @@ export default defineConfig({
     port: 7000,
     host: true,
     proxy: {
-      '/api': {
-        target: 'https://vixplay.altersoft.dev.br/api',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
       '/public': {
-        target: 'https://vixplay.altersoft.dev.br/api',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
       },
       '/private': {
-        target: 'https://vixplay.altersoft.dev.br/api',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
       },
