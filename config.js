@@ -1,5 +1,5 @@
 const APP_CONFIG = {
-    GOOGLE_CLIENT_ID: '666045311613-o08u09t55gv9tpi4865t6dsscopleku2.apps.googleusercontent.com',
+    GOOGLE_CLIENT_ID: '291186743494-ntdv1h0sj94bch80n9ut8rr8jblkofv3.apps.googleusercontent.com',
     // Determina automaticamente a URL base baseada no ambiente
     API_BASE_URL: (() => {
         // Verifica se está em produção
