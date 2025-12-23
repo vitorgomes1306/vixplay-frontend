@@ -26,6 +26,8 @@ function Login() {
   const location = useLocation();
   
   const from = location.state?.from?.pathname || '/dash';
+  const googleClientIdResolved = import.meta.env.VITE_GOOGLE_CLIENT_ID || (window.APP_CONFIG?.GOOGLE_CLIENT_ID ?? '');
+  const hasGoogleClientId = !!googleClientIdResolved;
 
   // Fundo da coluna direita: imagens e transição suave
   const backgrounds = [fundoLogin, fundoLogin2, fundoLogin3, fundoLogin4];
@@ -390,14 +392,25 @@ function Login() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError('Falha no login com Google.')}
-              useOneTap
-              theme={isDark ? 'filled_black' : 'outline'}
-              shape="rectangular"
-              size="large"
-            />
+            {hasGoogleClientId ? (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Falha no login com Google.')}
+                useOneTap
+                theme={isDark ? 'filled_black' : 'outline'}
+                shape="rectangular"
+                size="large"
+              />
+            ) : (
+              <div style={{
+                fontSize: '0.85rem',
+                color: currentTheme.textSecondary,
+                textAlign: 'center'
+              }}>
+                Client ID do Google não configurado. Defina <code>VITE_GOOGLE_CLIENT_ID</code> ou
+                <code> window.APP_CONFIG.GOOGLE_CLIENT_ID</code>.
+              </div>
+            )}
           </div>
 
           <div style={{
