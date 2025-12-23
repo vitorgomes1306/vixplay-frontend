@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -13,6 +14,7 @@ import fundoLogin4 from '../assets/img/fundo_login4.png';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : true);
@@ -249,27 +251,48 @@ function Login() {
             }}>
               Senha
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${currentTheme.border}`,
-                borderRadius: '0.5rem',
-                fontSize: '1rem',
-                backgroundColor: currentTheme.background,
-                color: currentTheme.textPrimary,
-                outline: 'none',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box'
-              }}
-              onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
-              onBlur={(e) => e.target.style.borderColor = currentTheme.border}
-              placeholder="••••••••"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 2.5rem 0.75rem 0.75rem',
+                  border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  backgroundColor: currentTheme.background,
+                  color: currentTheme.textPrimary,
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                onFocus={(e) => e.target.style.borderColor = currentTheme.primary}
+                onBlur={(e) => e.target.style.borderColor = currentTheme.border}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: currentTheme.textSecondary,
+                  fontSize: '1.1rem'
+                }}
+                title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             <div style={{ marginTop: '0.5rem', textAlign: 'right' }}>
               <a
                 href="/forgot-password"

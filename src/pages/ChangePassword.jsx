@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useTheme } from '../contexts/ThemeContext';
@@ -11,6 +12,8 @@ const ChangePassword = () => {
   const { isDark, currentTheme } = useTheme();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
@@ -148,41 +151,83 @@ const ChangePassword = () => {
             <label htmlFor="password" style={{ display: 'block', marginBottom: '6px' }}>
               Nova senha
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Digite a nova senha"
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '8px',
-                border: `1px solid ${currentTheme.inputBorder}`,
-                backgroundColor: currentTheme.inputBackground,
-                color: currentTheme.inputText,
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                id="password"
+                type={showNew ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Digite a nova senha"
+                style={{
+                  width: '100%',
+                  padding: '10px 36px 10px 10px',
+                  borderRadius: '8px',
+                  border: `1px solid ${currentTheme.inputBorder}`,
+                  backgroundColor: currentTheme.inputBackground,
+                  color: currentTheme.inputText,
+                }}
+              />
+              <button
+                type="button"
+                aria-label={showNew ? 'Ocultar senha' : 'Mostrar senha'}
+                onClick={() => setShowNew(!showNew)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: currentTheme.inputText,
+                  fontSize: '1rem'
+                }}
+                title={showNew ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '6px' }}>
               Confirmar senha
             </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirme a nova senha"
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '8px',
-                border: `1px solid ${currentTheme.inputBorder}`,
-                backgroundColor: currentTheme.inputBackground,
-                color: currentTheme.inputText,
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                id="confirmPassword"
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirme a nova senha"
+                style={{
+                  width: '100%',
+                  padding: '10px 36px 10px 10px',
+                  borderRadius: '8px',
+                  border: `1px solid ${currentTheme.inputBorder}`,
+                  backgroundColor: currentTheme.inputBackground,
+                  color: currentTheme.inputText,
+                }}
+              />
+              <button
+                type="button"
+                aria-label={showConfirm ? 'Ocultar senha' : 'Mostrar senha'}
+                onClick={() => setShowConfirm(!showConfirm)}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: currentTheme.inputText,
+                  fontSize: '1rem'
+                }}
+                title={showConfirm ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button
