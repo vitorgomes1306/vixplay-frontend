@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAvatarUrl } from '../../utils/avatarUtils';
+import { apiService } from '../../services/api';
 import Logo1 from '../../assets/img/vixplay1.png';
 import Logo2 from '../../assets/img/vixplay2.png';
 import LogoAltersoft1 from '../../assets/img/altersoft_logo_light.png';
@@ -16,7 +17,32 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
   const { currentTheme, isDark } = useTheme();
   const { user } = useAuth();
   const isVipClient = !!user?.vipClient;
+  const [companyLogo, setCompanyLogo] = useState(null);
   const restrictedPaths = new Set(['/clients', '/campaigns', '/integrations', '/utils']);
+
+  // Buscar logo da empresa (Works) e priorizar no header do Sidebar
+  useEffect(() => {
+    let mounted = true;
+    const fetchCompanyLogo = async () => {
+      try {
+        const response = await apiService.getWorks();
+        const works = Array.isArray(response?.data) ? response.data : [];
+        // Prioriza empresa com defaultLogo=true e logo definida; senão, usa a primeira com logo
+        const preferred = works.find(w => !!w?.defaultLogo && !!w?.logo) || works.find(w => !!w?.logo);
+        if (mounted) {
+          setCompanyLogo(preferred?.logo || null);
+        }
+      } catch (err) {
+        if (mounted) setCompanyLogo(null);
+      }
+    };
+    fetchCompanyLogo();
+    const handleDefaultLogoUpdated = () => {
+      fetchCompanyLogo();
+    };
+    window.addEventListener('works-default-logo-updated', handleDefaultLogoUpdated);
+    return () => { mounted = false; };
+  }, [user]);
 
   const handleToggle = () => {
     const newState = !isCollapsed;
@@ -141,29 +167,29 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
               fontSize: '1.25rem',
               fontWeight: 'bold'
             }}>
-              {user && user.picture && user.picture !== '0' && user.picture !== 'null' ? (
-                <img 
-                  src={getAvatarUrl(user.picture)} 
-                  alt="User Avatar" 
-                  style={{ 
+              {companyLogo ? (
+                <img
+                  src={companyLogo}
+                  alt="Logo da Empresa"
+                  style={{
                     width: '100%',
                     height: 'auto',
                     maxHeight: '60px',
                     objectFit: 'contain',
                     display: 'block',
                     margin: '0 auto'
-                  }} 
+                  }}
                 />
               ) : (
-                <img 
-                  src={isDark ? Logo1 : Logo2} 
-                  alt="Vix Play" 
-                  style={{ 
-                    width: '100%', 
+                <img
+                  src={isDark ? Logo1 : Logo2}
+                  alt="Vix Play"
+                  style={{
+                    width: '100%',
                     height: 'auto',
                     display: 'block',
                     margin: '0 auto'
-                  }} 
+                  }}
                 />
               )}
             </h2>

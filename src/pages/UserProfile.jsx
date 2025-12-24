@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { getAvatarUrl, updateUserAvatar } from '../utils/avatarUtils';
 import alertaIcon from '../assets/img/alerta.png';
+import { Plus, Edit2, Trash2, Building2, CheckCircle, AlertCircle, X, Star } from 'lucide-react';
 
 const UserProfile = () => {
   const { currentTheme } = useTheme();
@@ -45,6 +46,41 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Estado para CRUD de empresas
+  const [companies, setCompanies] = useState([]);
+  const [companiesLoading, setCompaniesLoading] = useState(false);
+  const [companySearch, setCompanySearch] = useState('');
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
+  const [showDeleteCompanyModal, setShowDeleteCompanyModal] = useState(false);
+  const [companyForm, setCompanyForm] = useState({
+    name: '',
+    fantasyName: '',
+    email: '',
+    phone: '',
+    cellphone: '',
+    cpfCnpj: '',
+    zipCode: '',
+    state: '',
+    city: '',
+    zone: '',
+    street: '',
+    number: '',
+    complement: '',
+    paymentMethod: 'pix',
+    paymentDay: 1,
+    addressPayment: '',
+    bankAccount: '',
+    bankName: '',
+    bankBranch: '',
+    defaultLogo: false
+  });
+  const [companyLogoFile, setCompanyLogoFile] = useState(null);
+  const [companyAlertVisible, setCompanyAlertVisible] = useState(false);
+  const [companyAlertMessage, setCompanyAlertMessage] = useState('');
+  const [companyAlertType, setCompanyAlertType] = useState('success'); // 'success' | 'error'
+  const [companyModalTab, setCompanyModalTab] = useState('info'); // 'info' | 'finance'
+
   // Normaliza o campo "Tipo de Pessoa" para valores válidos
   const normalizePersonType = (value) => {
     if (!value) return undefined;
@@ -65,6 +101,13 @@ const UserProfile = () => {
     loadNotifications();
   }, [location.search]);
 
+  // Carregar empresas quando a aba for ativada
+  useEffect(() => {
+    if (activeTab === 'empresas') {
+      loadCompanies();
+    }
+  }, [activeTab]);
+
   // Normaliza diferentes formatos de isAdmin (boolean, string, number)
   const normalizeIsAdmin = (val) => {
     if (typeof val === 'boolean') return val;
@@ -74,6 +117,225 @@ const UserProfile = () => {
     }
     if (typeof val === 'number') return val === 1;
     return !!val;
+  };
+  
+  // CRUD Empresas
+  const loadCompanies = async () => {
+    try {
+      setCompaniesLoading(true);
+      const response = await apiService.getWorks();
+      setCompanies(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Erro ao carregar empresas:', error);
+    } finally {
+      setCompaniesLoading(false);
+    }
+  };
+
+  const openNewCompanyModal = () => {
+    setEditingCompany(null);
+    setCompanyForm({
+      name: '',
+      fantasyName: '',
+      email: '',
+      phone: '',
+      cellphone: '',
+      cpfCnpj: '',
+      zipCode: '',
+      state: '',
+      city: '',
+      zone: '',
+      street: '',
+      number: '',
+      complement: '',
+      paymentMethod: 'pix',
+      paymentDay: 1,
+      addressPayment: '',
+      bankAccount: '',
+      bankName: '',
+      bankBranch: '',
+      defaultLogo: false
+    });
+    setCompanyLogoFile(null);
+    setCompanyModalTab('info');
+    setShowCompanyModal(true);
+  };
+
+  const openEditCompanyModal = (company) => {
+    setEditingCompany(company);
+    setCompanyForm({
+      name: company?.name || '',
+      fantasyName: company?.fantasyName || '',
+      email: company?.email || '',
+      phone: company?.phone || '',
+      cellphone: company?.cellPhone || '',
+      cpfCnpj: company?.cnpj || '',
+      zipCode: company?.zipcode || '',
+      state: company?.state || '',
+      city: company?.city || '',
+      zone: company?.zone || '',
+      street: company?.street || '',
+      number: company?.number || '',
+      complement: company?.complement || '',
+      paymentMethod: company?.paymentMethod || 'pix',
+      paymentDay: company?.paymentDay ?? 1,
+      addressPayment: company?.addressPayment || '',
+      bankAccount: company?.bankAccount || '',
+      bankName: company?.bankName || '',
+      bankBranch: company?.bankBranch || '',
+      defaultLogo: !!company?.defaultLogo
+    });
+    setCompanyLogoFile(null);
+    setCompanyModalTab('info');
+    setShowCompanyModal(true);
+  };
+
+  const closeCompanyModal = () => {
+    setShowCompanyModal(false);
+    setCompanyLogoFile(null);
+  };
+
+  const handleCompanyFormChange = (field, value) => {
+    setCompanyForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const formatCompanyPhoneChange = (e) => {
+    const digitsOnly = (e.target.value || '').replace(/\D/g, '');
+    handleCompanyFormChange('phone', digitsOnly.slice(0, 11));
+  };
+
+  const formatCompanyCellphoneChange = (e) => {
+    const formatted = formatCellphone(e.target.value);
+    handleCompanyFormChange('cellphone', formatted);
+  };
+
+  const handleCompanyCepChange = (e) => {
+    const formattedCep = formatCep(e.target.value);
+    handleCompanyFormChange('zipCode', formattedCep);
+    const cleanCep = formattedCep.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      handleCompanyCepSearch(formattedCep);
+    }
+  };
+
+  const handleCompanyCepSearch = async (cep) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) return;
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+      if (data.erro) return;
+      setCompanyForm((prev) => ({
+        ...prev,
+        street: data.logradouro || '',
+        zone: data.bairro || '',
+        city: data.localidade || '',
+        state: data.uf || ''
+      }));
+    } catch (error) {
+      console.error('Erro ao buscar CEP da empresa:', error);
+    }
+  };
+
+  const saveCompany = async () => {
+    try {
+      const formData = new FormData();
+      if (companyForm.name) formData.append('name', companyForm.name);
+      if (companyForm.fantasyName) formData.append('fantasyName', companyForm.fantasyName);
+      if (companyForm.email) formData.append('email', companyForm.email);
+      if (companyForm.phone) formData.append('phone', companyForm.phone);
+      if (companyForm.cellphone) formData.append('cellPhone', companyForm.cellphone);
+      if (companyForm.cpfCnpj) formData.append('cnpj', companyForm.cpfCnpj);
+      if (companyForm.zipCode) formData.append('zipcode', companyForm.zipCode);
+      if (companyForm.state) formData.append('state', companyForm.state);
+      if (companyForm.city) formData.append('city', companyForm.city);
+      if (companyForm.zone) formData.append('zone', companyForm.zone);
+      if (companyForm.street) formData.append('street', companyForm.street);
+      if (companyForm.number) formData.append('number', companyForm.number);
+      if (companyForm.complement) formData.append('complement', companyForm.complement);
+      if (companyForm.paymentMethod) formData.append('paymentMethod', companyForm.paymentMethod);
+      if (companyForm.paymentDay !== undefined && companyForm.paymentDay !== null) formData.append('paymentDay', String(companyForm.paymentDay));
+      if (companyForm.addressPayment) formData.append('addressPayment', companyForm.addressPayment);
+      if (companyForm.bankAccount) formData.append('bankAccount', companyForm.bankAccount);
+      if (companyForm.bankName) formData.append('bankName', companyForm.bankName);
+      if (companyForm.bankBranch) formData.append('bankBranch', companyForm.bankBranch);
+      if (companyForm.defaultLogo !== undefined && companyForm.defaultLogo !== null) formData.append('defaultLogo', String(!!companyForm.defaultLogo));
+      if (companyLogoFile) formData.append('logo', companyLogoFile);
+
+      if (editingCompany?.id) {
+        await apiService.updateWork(editingCompany.id, formData);
+        setCompanyAlertMessage('Empresa atualizada com sucesso.');
+      } else {
+        await apiService.createWork(formData);
+        setCompanyAlertMessage('Empresa criada com sucesso.');
+      }
+      setCompanyAlertType('success');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 4000);
+      setShowCompanyModal(false);
+      await loadCompanies();
+      // Notifica o Sidebar para atualizar a logo
+      try { window.dispatchEvent(new CustomEvent('works-default-logo-updated')); } catch {}
+    } catch (error) {
+      console.error('Erro ao salvar empresa:', error);
+      setCompanyAlertMessage('Erro ao salvar empresa.');
+      setCompanyAlertType('error');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 5000);
+    }
+  };
+
+  // Define uma empresa como padrão (defaultLogo=true) e remove o padrão das demais
+  const setDefaultCompanyLogo = async (selectedId) => {
+    try {
+      const updates = (companies || []).map((c) => {
+        const fd = new FormData();
+        fd.append('defaultLogo', String(c.id === selectedId));
+        return apiService.updateWork(c.id, fd);
+      });
+      await Promise.all(updates);
+      setCompanyAlertMessage('Logo padrão atualizada.');
+      setCompanyAlertType('success');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 4000);
+      await loadCompanies();
+      // Notifica o Sidebar para atualizar a logo imediatamente
+      try { window.dispatchEvent(new CustomEvent('works-default-logo-updated', { detail: { id: selectedId } })); } catch {}
+    } catch (error) {
+      console.error('Erro ao definir logo padrão:', error);
+      setCompanyAlertMessage('Erro ao definir logo padrão.');
+      setCompanyAlertType('error');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 5000);
+    }
+  };
+
+  const confirmDeleteCompany = (company) => {
+    setEditingCompany(company);
+    setShowDeleteCompanyModal(true);
+  };
+
+  const closeDeleteCompanyModal = () => {
+    setShowDeleteCompanyModal(false);
+  };
+
+  const deleteCompany = async () => {
+    try {
+      if (!editingCompany?.id) return;
+      await apiService.deleteWork(editingCompany.id);
+      setCompanyAlertMessage('Empresa excluída com sucesso.');
+      setCompanyAlertType('success');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 4000);
+      setShowDeleteCompanyModal(false);
+      await loadCompanies();
+    } catch (error) {
+      console.error('Erro ao excluir empresa:', error);
+      setCompanyAlertMessage('Erro ao excluir empresa.');
+      setCompanyAlertType('error');
+      setCompanyAlertVisible(true);
+      setTimeout(() => setCompanyAlertVisible(false), 5000);
+    }
   };
 
   const loadUserData = async () => {
@@ -405,6 +667,7 @@ const UserProfile = () => {
 
   const tabs = [
     { id: 'dados', label: 'Meus Dados', icon: 'bi-person' },
+    { id: 'empresas', label: 'Minhas Empresas', icon: 'bi-building' },
     { id: 'financeiro', label: 'Financeiro', icon: 'bi-credit-card' },
     { id: 'configuracoes', label: 'Configurações', icon: 'bi-gear' },
     { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell' }
@@ -1128,6 +1391,332 @@ const UserProfile = () => {
             </div>
             </div>
           );
+
+      case 'empresas':
+        return (
+          <div style={{ padding: '2rem' }}>
+            {/* Alertas com estilos inline para maior compatibilidade */}
+            {companyAlertVisible && (
+              <div
+                style={{
+                  position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999,
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.75rem 1rem', borderRadius: '0.5rem',
+                  border: `1px solid ${companyAlertType === 'success' ? '#86efac' : '#fca5a5'}`,
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+                  background: companyAlertType === 'success' ? '#f0fdf4' : '#fef2f2',
+                  color: companyAlertType === 'success' ? '#166534' : '#7f1d1d'
+                }}
+              >
+                {companyAlertType === 'success' ? (
+                  <CheckCircle size={20} color="#16a34a" />
+                ) : (
+                  <AlertCircle size={20} color="#ef4444" />
+                )}
+                <span style={{ fontWeight: 600 }}>{companyAlertMessage}</span>
+                <button onClick={() => setCompanyAlertVisible(false)} style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ color: currentTheme.textPrimary, fontFamily: 'Poppins, sans-serif' }}>Minhas Empresas</h3>
+              <button
+                onClick={openNewCompanyModal}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  backgroundColor: currentTheme.primary, color: 'white', border: 'none',
+                  borderRadius: '0.375rem', padding: '0.5rem 1rem', cursor: 'pointer',
+                  fontFamily: 'Poppins, sans-serif', fontWeight: 500
+                }}
+              >
+                <Plus size={18} /> Nova Empresa
+              </button>
+            </div>
+
+            {/* Busca */}
+            <div style={{ marginBottom: '1rem' }}>
+              <input
+                type="text"
+                placeholder="Buscar por nome ou email..."
+                value={companySearch}
+                onChange={(e) => setCompanySearch(e.target.value)}
+                style={{
+                  width: '100%', padding: '0.75rem', border: `1px solid ${currentTheme.border}`,
+                  borderRadius: '0.375rem', backgroundColor: currentTheme.background,
+                  color: currentTheme.textPrimary, fontFamily: 'Poppins, sans-serif'
+                }}
+              />
+            </div>
+
+            {/* Lista */}
+            <div style={{
+              backgroundColor: currentTheme.cardBackground,
+              borderRadius: '0.5rem', border: `1px solid ${currentTheme.border}`,
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                padding: '0.75rem 1rem', backgroundColor: currentTheme.borderLight,
+                borderBottom: `1px solid ${currentTheme.border}`, display: 'grid',
+                gridTemplateColumns: '2fr 1.5fr 1.5fr 0.8fr', gap: '1rem', fontWeight: 600,
+                color: currentTheme.textPrimary
+              }}>
+                <span>Nome</span>
+                <span>Email</span>
+                <span>Celular</span>
+                <span style={{ textAlign: 'right' }}>Ações</span>
+              </div>
+
+              {companiesLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: currentTheme.textSecondary }}>
+                  Carregando empresas...
+                </div>
+              ) : (
+                (companies || [])
+                  .filter((c) => {
+                    const term = companySearch.trim().toLowerCase();
+                    if (!term) return true;
+                    const name = (c.name || '').toLowerCase();
+                    const email = (c.email || '').toLowerCase();
+                    return name.includes(term) || email.includes(term);
+                  })
+                  .map((company, idx) => (
+                    <div key={company.id || idx} style={{
+                      padding: '0.75rem 1rem', borderBottom: idx < companies.length - 1 ? `1px solid ${currentTheme.border}` : 'none',
+                      display: 'grid', gridTemplateColumns: '2fr 1.5fr 1.5fr 0.8fr', gap: '1rem',
+                      color: currentTheme.textPrimary
+                    }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {company.logo ? (
+                          <img src={company.logo} alt="Logo" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover', border: `1px solid ${currentTheme.border}` }} />
+                        ) : (
+                          <Building2 size={16} />
+                        )}
+                        {company.defaultLogo && (
+                          <Star size={16} color={currentTheme.primary} title="Logo padrão" />
+                        )}
+                        {company.name || '—'}
+                      </span>
+                      <span>{company.email || '—'}</span>
+                      <span>{company.cellPhone || '—'}</span>
+                      <span style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        <button
+                          onClick={() => setDefaultCompanyLogo(company.id)}
+                          style={{
+                            padding: '0.375rem 0.5rem', border: `1px solid ${currentTheme.border}`,
+                            background: 'transparent', borderRadius: '0.375rem', cursor: 'pointer',
+                            color: company.defaultLogo ? currentTheme.primary : currentTheme.textSecondary
+                          }}
+                          title={company.defaultLogo ? 'Padrão atual' : 'Definir como padrão'}
+                        >
+                          <Star size={16} />
+                        </button>
+                        <button
+                          onClick={() => openEditCompanyModal(company)}
+                          style={{
+                            padding: '0.375rem 0.5rem', border: `1px solid ${currentTheme.border}`,
+                            background: 'transparent', borderRadius: '0.375rem', cursor: 'pointer',
+                            color: currentTheme.textPrimary
+                          }}
+                          title="Editar"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => confirmDeleteCompany(company)}
+                          style={{
+                            padding: '0.375rem 0.5rem', border: `1px solid ${currentTheme.border}`,
+                            background: 'transparent', borderRadius: '0.375rem', cursor: 'pointer',
+                            color: '#ef4444'
+                          }}
+                          title="Excluir"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </span>
+                    </div>
+                  ))
+              )}
+              {(!companiesLoading && companies?.length === 0) && (
+                <div style={{ padding: '2rem', textAlign: 'center', color: currentTheme.textSecondary }}>
+                  Nenhuma empresa cadastrada
+                </div>
+              )}
+            </div>
+
+            {/* Modal Criar/Editar Empresa */}
+            {showCompanyModal && (
+              <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ width: 'min(720px, 92vw)', backgroundColor: currentTheme.cardBackground, borderRadius: '0.5rem', border: `1px solid ${currentTheme.border}` }}>
+                  <div style={{ padding: '1rem 1.25rem', borderBottom: `1px solid ${currentTheme.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, color: currentTheme.textPrimary, fontFamily: 'Poppins, sans-serif' }}>{editingCompany ? 'Editar Empresa' : 'Nova Empresa'}</h4>
+                    <button onClick={closeCompanyModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: currentTheme.textSecondary }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+                  {/* Tabs do modal */}
+                  <div style={{ padding: '0.75rem 1.25rem', borderBottom: `1px solid ${currentTheme.border}`, display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => setCompanyModalTab('info')}
+                      style={{
+                        padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: `1px solid ${currentTheme.border}`,
+                        background: companyModalTab === 'info' ? currentTheme.primary : 'transparent',
+                        color: companyModalTab === 'info' ? '#fff' : currentTheme.textPrimary,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Informações da empresa
+                    </button>
+                    <button
+                      onClick={() => setCompanyModalTab('finance')}
+                      style={{
+                        padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: `1px solid ${currentTheme.border}`,
+                        background: companyModalTab === 'finance' ? currentTheme.primary : 'transparent',
+                        color: companyModalTab === 'finance' ? '#fff' : currentTheme.textPrimary,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Dados financeiros
+                    </button>
+                  </div>
+
+                  {/* Conteúdo com rolagem */}
+                  <div style={{ padding: '1rem 1.25rem', maxHeight: '70vh', overflowY: 'auto' }}>
+                    {companyModalTab === 'info' ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Logo da empresa</label>
+                          <input type="file" accept="image/*" onChange={(e) => setCompanyLogoFile(e.target.files?.[0] || null)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                          <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <input
+                              type="checkbox"
+                              id="defaultLogoCheckbox"
+                              checked={!!companyForm.defaultLogo}
+                              onChange={(e) => handleCompanyFormChange('defaultLogo', e.target.checked)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <label htmlFor="defaultLogoCheckbox" style={{ color: currentTheme.textPrimary, cursor: 'pointer' }}>
+                              Usar esta logo como padrão na Sidebar
+                            </label>
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Nome da empresa</label>
+                          <input type="text" value={companyForm.name} onChange={(e) => handleCompanyFormChange('name', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Nome fantasia</label>
+                          <input type="text" value={companyForm.fantasyName} onChange={(e) => handleCompanyFormChange('fantasyName', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Email</label>
+                          <input type="email" value={companyForm.email} onChange={(e) => handleCompanyFormChange('email', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Telefone</label>
+                          <input type="tel" value={companyForm.phone} onChange={formatCompanyPhoneChange} maxLength={11} placeholder="DDD+número. Ex: 8540423081" style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Celular</label>
+                          <input type="tel" value={companyForm.cellphone} onChange={formatCompanyCellphoneChange} maxLength={15} placeholder="(85) 99999-9999" style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>CPF/CNPJ</label>
+                          <input type="text" value={companyForm.cpfCnpj} onChange={(e) => handleCompanyFormChange('cpfCnpj', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>CEP</label>
+                          <input type="text" value={companyForm.zipCode} onChange={handleCompanyCepChange} maxLength={9} placeholder="00000-000" style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Estado</label>
+                          <input type="text" value={companyForm.state} onChange={(e) => handleCompanyFormChange('state', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Cidade</label>
+                          <input type="text" value={companyForm.city} onChange={(e) => handleCompanyFormChange('city', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Bairro/Zona</label>
+                          <input type="text" value={companyForm.zone} onChange={(e) => handleCompanyFormChange('zone', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Rua</label>
+                          <input type="text" value={companyForm.street} onChange={(e) => handleCompanyFormChange('street', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Número</label>
+                          <input type="text" value={companyForm.number} onChange={(e) => handleCompanyFormChange('number', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Complemento</label>
+                          <input type="text" value={companyForm.complement} onChange={(e) => handleCompanyFormChange('complement', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Forma de pagamento</label>
+                          <select value={companyForm.paymentMethod} onChange={(e) => handleCompanyFormChange('paymentMethod', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }}>
+                            <option value="pix">Pix</option>
+                            <option value="boleto">Boleto</option>
+                            <option value="transferencia">Transferência</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Dia do pagamento</label>
+                          <input type="number" min={1} max={31} value={companyForm.paymentDay} onChange={(e) => handleCompanyFormChange('paymentDay', Number(e.target.value))} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Endereço de cobrança</label>
+                          <input type="text" value={companyForm.addressPayment} onChange={(e) => handleCompanyFormChange('addressPayment', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Conta bancária</label>
+                          <input type="text" value={companyForm.bankAccount} onChange={(e) => handleCompanyFormChange('bankAccount', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Banco</label>
+                          <input type="text" value={companyForm.bankName} onChange={(e) => handleCompanyFormChange('bankName', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Agência</label>
+                          <input type="text" value={companyForm.bankBranch} onChange={(e) => handleCompanyFormChange('bankBranch', e.target.value)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ padding: '0.75rem 1.25rem', borderTop: `1px solid ${currentTheme.border}`, display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                    <button onClick={closeCompanyModal} style={{ background: 'transparent', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', padding: '0.5rem 0.75rem', cursor: 'pointer', color: currentTheme.textPrimary }}>Cancelar</button>
+                    <button onClick={saveCompany} style={{ background: currentTheme.primary, color: 'white', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', cursor: 'pointer' }}>{editingCompany ? 'Salvar' : 'Criar'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Excluir Empresa */}
+            {showDeleteCompanyModal && (
+              <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ width: 'min(520px, 92vw)', backgroundColor: currentTheme.cardBackground, borderRadius: '0.5rem', border: `1px solid ${currentTheme.border}` }}>
+                  <div style={{ padding: '1rem 1.25rem', borderBottom: `1px solid ${currentTheme.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, color: currentTheme.textPrimary, fontFamily: 'Poppins, sans-serif' }}>Confirmar Exclusão</h4>
+                    <button onClick={closeDeleteCompanyModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: currentTheme.textSecondary }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <div style={{ padding: '1rem 1.25rem', color: currentTheme.textPrimary }}>
+                    Tem certeza que deseja excluir a empresa <strong>{editingCompany?.name || editingCompany?.workName}</strong>? Essa ação não pode ser desfeita.
+                  </div>
+                  <div style={{ padding: '0.75rem 1.25rem', borderTop: `1px solid ${currentTheme.border}`, display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                    <button onClick={closeDeleteCompanyModal} style={{ background: 'transparent', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', padding: '0.5rem 0.75rem', cursor: 'pointer', color: currentTheme.textPrimary }}>Cancelar</button>
+                    <button onClick={deleteCompany} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '0.375rem', padding: '0.5rem 0.75rem', cursor: 'pointer' }}>Excluir</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
 
       case 'financeiro':
         return (

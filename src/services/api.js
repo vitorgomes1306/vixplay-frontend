@@ -212,6 +212,13 @@ export const apiService = {
   createClient: (data) => api.post(getConfig().API_ENDPOINTS.CLIENTS, data),
   updateClient: (id, data) => api.put(`${getConfig().API_ENDPOINTS.CLIENTS}/${id}`, data),
   deleteClient: (id) => api.delete(`${getConfig().API_ENDPOINTS.CLIENTS}/${id}`),
+
+  // Works (Empresas)
+  getWorks: () => api.get('/private/works'),
+  getWork: (id) => api.get(`/private/works/${id}`),
+  createWork: (formData) => api.post('/private/works', formData),
+  updateWork: (id, formData) => api.put(`/private/works/${id}`, formData),
+  deleteWork: (id) => api.delete(`/private/works/${id}`),
   
   // Campaigns
   getCampaigns: () => api.get(getConfig().API_ENDPOINTS.CAMPAIGNS),
