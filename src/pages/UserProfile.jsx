@@ -338,6 +338,42 @@ const UserProfile = () => {
     }
   };
 
+  // Preview e validação de upload de logo da empresa
+  const [companyLogoPreview, setCompanyLogoPreview] = useState(null);
+  useEffect(() => {
+    if (companyLogoFile) {
+      const url = URL.createObjectURL(companyLogoFile);
+      setCompanyLogoPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setCompanyLogoPreview(editingCompany?.logo || null);
+    }
+  }, [companyLogoFile, editingCompany]);
+
+  const handleCompanyLogoSelect = (e) => {
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setCompanyLogoFile(null);
+      return;
+    }
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setAlertMessage('Formato de arquivo não suportado. Use JPG, PNG ou GIF.');
+      setAlertType('error');
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setAlertMessage('Arquivo muito grande. Tamanho máximo: 5MB.');
+      setAlertType('error');
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 5000);
+      return;
+    }
+    setCompanyLogoFile(file);
+  };
+
   const loadUserData = async () => {
     try {
       const response = await apiService.getProfile();
@@ -354,8 +390,13 @@ const UserProfile = () => {
       if (response.data.picture) {
         updateUserAvatar(updateUser, response.data.picture);
       }
+      // Limpar possíveis alertas anteriores
+      setShowAlert(false);
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);
+      setAlertMessage('Erro ao carregar dados do usuário. Verifique sua conexão ou faça login novamente.');
+      setAlertType('error');
+      setShowAlert(true);
     }
   };
 
@@ -766,7 +807,7 @@ const UserProfile = () => {
                     color: currentTheme.textPrimary,
                     fontFamily: 'Poppins, sans-serif'
                   }}>
-                    Logo da empresa
+                    Avatar do usuário
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     {/* Preview do Avatar */}
@@ -949,13 +990,13 @@ const UserProfile = () => {
                     color: currentTheme.textPrimary,
                     fontFamily: 'Poppins, sans-serif'
                   }}>
-                    CPF/CNPJ
+                    CPF
                   </label>
                   <input
                     type="text"
                     value={userData.cpfCnpj || ''}
                     onChange={(e) => setUserData({ ...userData, cpfCnpj: e.target.value })}
-                    placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                    placeholder="000.000.000-00"
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -969,119 +1010,12 @@ const UserProfile = () => {
                   />
                 </div>
 
-                {/* Tipo de Pessoa */}
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    fontWeight: '500',
-                    color: currentTheme.textPrimary,
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    Tipo de Pessoa
-                  </label>
-                  <select
-                    value={userData.type || ''}
-                    onChange={(e) => setUserData({ ...userData, type: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: `1px solid ${currentTheme.border}`,
-                      borderRadius: '0.375rem',
-                      backgroundColor: currentTheme.background,
-                      color: currentTheme.textPrimary,
-                      fontSize: '1rem',
-                      fontFamily: 'Poppins, sans-serif'
-                    }}
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="pf">Pessoa Física</option>
-                    <option value="pj">Pessoa Jurídica</option>
-                  </select>
-                </div>
+                
               </div>
             </div>
 
             {/* Dados da Empresa */}
-            <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                color: currentTheme.textPrimary,
-                fontFamily: 'Poppins, sans-serif',
-                marginBottom: '1rem',
-                borderBottom: `2px solid ${currentTheme.primary}`,
-                paddingBottom: '0.5rem'
-              }}>
-                Dados da Empresa
-              </h3>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                {/* Nome de Trabalho */}
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    fontWeight: '500',
-                    color: currentTheme.textPrimary,
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    Nome da empresa
-                  </label>
-                  <input
-                    type="text"
-                    value={userData.workName || ''}
-                    onChange={(e) => setUserData({ ...userData, workName: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: `1px solid ${currentTheme.border}`,
-                      borderRadius: '0.375rem',
-                      backgroundColor: currentTheme.background,
-                      color: currentTheme.textPrimary,
-                      fontSize: '1rem',
-                      fontFamily: 'Poppins, sans-serif'
-                    }}
-                  />
-                </div>
-
-                {/* Dia de Pagamento */}
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.5rem',
-                    fontWeight: '500',
-                    color: currentTheme.textPrimary,
-                    fontFamily: 'Poppins, sans-serif'
-                  }}>
-                    Dia de Pagamento
-                  </label>
-                  <select
-                    value={userData.dayOfPayment || ''}
-                    onChange={(e) => setUserData({ ...userData, dayOfPayment: e.target.value })}
-                    disabled={!userData?.avaliationPeriod && !user?.isAdmin}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: `1px solid ${currentTheme.border}`,
-                      borderRadius: '0.375rem',
-                      backgroundColor: currentTheme.background,
-                      color: currentTheme.textPrimary,
-                      fontSize: '1rem',
-                      fontFamily: 'Poppins, sans-serif'
-                    }}
-                  >
-                    <option value="">Selecione...</option>
-                    {[5, 10, 15, 20, 25, 30].map(day => (
-                      <option key={day} value={day}>
-                        {String(day).padStart(2, '0')}
-                      </option>
-                    ))}
-                  </select>
-
-                </div>
-              </div>
-            </div>
+            
 
             {/* Endereço */}
             <div style={{ marginBottom: '2rem' }}>
@@ -1586,8 +1520,73 @@ const UserProfile = () => {
                     {companyModalTab === 'info' ? (
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div style={{ gridColumn: '1 / -1' }}>
-                          <label style={{ display: 'block', marginBottom: '0.375rem', color: currentTheme.textPrimary }}>Logo da empresa</label>
-                          <input type="file" accept="image/*" onChange={(e) => setCompanyLogoFile(e.target.files?.[0] || null)} style={{ width: '100%', padding: '0.625rem', border: `1px solid ${currentTheme.border}`, borderRadius: '0.375rem', background: currentTheme.background, color: currentTheme.textPrimary }} />
+                          <label style={{
+                            display: 'block',
+                            marginBottom: '0.5rem',
+                            fontWeight: '500',
+                            color: currentTheme.textPrimary,
+                            fontFamily: 'Poppins, sans-serif'
+                          }}>Logo da empresa</label>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            {/* Preview da Logo */}
+                            <div style={{
+                              width: '80px',
+                              height: '80px',
+                              borderRadius: '0.375rem',
+                              overflow: 'hidden',
+                              border: `2px solid ${currentTheme.border}`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: currentTheme.cardBackground
+                            }}>
+                              {companyLogoPreview ? (
+                                <img
+                                  src={companyLogoPreview}
+                                  alt="Logo"
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                <i className="bi bi-image" style={{ fontSize: '2rem', color: currentTheme.textSecondary }}></i>
+                              )}
+                            </div>
+
+                            {/* Input de Upload estilizado */}
+                            <div>
+                              <input
+                                type="file"
+                                id="company-logo-upload"
+                                accept="image/*"
+                                onChange={handleCompanyLogoSelect}
+                                style={{ display: 'none' }}
+                              />
+                              <label
+                                htmlFor="company-logo-upload"
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '0.5rem 1rem',
+                                  backgroundColor: currentTheme.primary,
+                                  color: 'white',
+                                  borderRadius: '0.375rem',
+                                  cursor: 'pointer',
+                                  fontFamily: 'Poppins, sans-serif',
+                                  fontSize: '0.875rem',
+                                  fontWeight: '500',
+                                  border: 'none',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                {saving ? 'Enviando...' : 'Escolher Logo'}
+                              </label>
+                              <div style={{
+                                fontSize: '0.75rem',
+                                color: currentTheme.textSecondary,
+                                marginTop: '0.25rem'
+                              }}>
+                                JPG, PNG ou GIF (máx. 5MB)
+                              </div>
+                            </div>
+                          </div>
                           <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <input
                               type="checkbox"
