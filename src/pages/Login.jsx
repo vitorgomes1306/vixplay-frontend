@@ -74,6 +74,17 @@ function Login() {
     return !!val;
   };
 
+  // Normaliza diferentes formatos de vipClient/vipCliente (boolean, string, number)
+  const normalizeVipClient = (val) => {
+    if (typeof val === 'boolean') return val;
+    if (typeof val === 'string') {
+      const s = val.trim().toLowerCase();
+      return s === 'true' || s === '1' || s === 'yes' || s === 'sim';
+    }
+    if (typeof val === 'number') return val === 1;
+    return !!val;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -118,7 +129,9 @@ function Login() {
           name: profile?.name ?? response.data?.name,
           email: profile?.email ?? response.data?.email ?? email,
           isAdmin: normalizeIsAdmin(profile?.isAdmin ?? response.data?.isAdmin),
-          vipClient: !!(profile?.vipClient ?? response.data?.vipClient),
+          vipClient: normalizeVipClient(
+            (profile?.vipClient ?? profile?.vipCliente ?? response.data?.vipClient ?? response.data?.vipCliente)
+          ),
         };
         
         // Debug: verificar dados do usuário
@@ -171,7 +184,9 @@ function Login() {
           name: profile?.name ?? response.data?.name,
           email: profile?.email ?? response.data?.email,
           isAdmin: normalizeIsAdmin(profile?.isAdmin ?? response.data?.isAdmin),
-          vipClient: !!(profile?.vipClient ?? response.data?.vipClient),
+          vipClient: normalizeVipClient(
+            (profile?.vipClient ?? profile?.vipCliente ?? response.data?.vipClient ?? response.data?.vipCliente)
+          ),
         };
         login(user, token);
         navigate(from, { replace: true });

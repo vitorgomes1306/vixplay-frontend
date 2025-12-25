@@ -16,7 +16,17 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
   const [utilsOpen, setUtilsOpen] = useState(false);
   const { currentTheme, isDark } = useTheme();
   const { user } = useAuth();
-  const isVipClient = !!user?.vipClient;
+  const normalizeFlag = (val) => {
+    if (typeof val === 'boolean') return val;
+    if (typeof val === 'string') {
+      const s = val.trim().toLowerCase();
+      return s === 'true' || s === '1' || s === 'yes' || s === 'sim';
+    }
+    if (typeof val === 'number') return val === 1;
+    return !!val;
+  };
+  const [vipUnlocked, setVipUnlocked] = useState(false);
+  const isVipClient = normalizeFlag(user?.vipClient) || vipUnlocked;
   const [companyLogo, setCompanyLogo] = useState(null);
   const restrictedPaths = new Set(['/clients', '/campaigns', '/integrations', '/utils']);
 
@@ -36,7 +46,17 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
         if (mounted) setCompanyLogo(null);
       }
     };
+    const fetchVipFromProfile = async () => {
+      try {
+        const profileRes = await apiService.getProfile();
+        const vip = normalizeFlag(profileRes?.data?.vipClient);
+        if (mounted) setVipUnlocked(!!vip);
+      } catch (_) {
+        if (mounted) setVipUnlocked(false);
+      }
+    };
     fetchCompanyLogo();
+    fetchVipFromProfile();
     const handleDefaultLogoUpdated = () => {
       fetchCompanyLogo();
     };

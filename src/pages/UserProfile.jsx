@@ -881,13 +881,23 @@ const UserProfile = () => {
                 {/* Nome Completo */}
                 <div>
                   <label style={{
-                    display: 'block',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
                     marginBottom: '0.5rem',
                     fontWeight: '500',
                     color: currentTheme.textPrimary,
                     fontFamily: 'Poppins, sans-serif'
                   }}>
-                    Nome Completo
+                    <span>Nome Completo</span>
+                    {(() => {
+                      const isVip = !!(userData?.vipClient);
+                      return (
+                        <span title={isVip ? 'Cliente VIP' : 'Cliente padrão'} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <i className={`bi ${isVip ? 'bi-gem' : 'bi-gem'}`} style={{ color: isVip ? '#f59e0b' : currentTheme.textSecondary }}></i>
+                        </span>
+                      );
+                    })()}
                   </label>
                   <input
                     type="text"
@@ -1398,7 +1408,7 @@ const UserProfile = () => {
               }}>
                 <span>Nome</span>
                 <span>Email</span>
-                <span>Celular</span>
+                <span>Telefone</span>
                 <span style={{ textAlign: 'right' }}>Ações</span>
               </div>
 
@@ -1433,7 +1443,7 @@ const UserProfile = () => {
                         {company.name || '—'}
                       </span>
                       <span>{company.email || '—'}</span>
-                      <span>{company.cellPhone || '—'}</span>
+                      <span>{company.phone || '—'}</span>
                       <span style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button
                           onClick={() => setDefaultCompanyLogo(company.id)}
