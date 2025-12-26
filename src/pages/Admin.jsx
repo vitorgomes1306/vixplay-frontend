@@ -1223,9 +1223,7 @@ const UserDetailsModal = ({
                         </div>
                       </div>
 
-                      {subtitle && (
-                        <div style={styles.deviceMeta}>{subtitle}</div>
-                      )}
+                      {/* Subtítulo removido: MAC agora exibido no grid de informações */}
 
                       <div style={styles.deviceBadges}>
                         {isActive !== undefined && (
@@ -1253,6 +1251,10 @@ const UserDetailsModal = ({
                         <div style={styles.deviceInfoItem}>
                           <span style={styles.deviceLabel}>Chave</span>
                           <span style={styles.deviceValue}>{device?.deviceKey || '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>MAC</span>
+                          <span style={styles.deviceValue}>{device?.macAddress || '—'}</span>
                         </div>
                         <div style={styles.deviceInfoItem}>
                           <span style={styles.deviceLabel}>Formato</span>
