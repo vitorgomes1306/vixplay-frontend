@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Sun, Moon, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -341,9 +342,21 @@ const Layout = ({ children }) => {
                   e.target.style.color = currentTheme.textSecondary;
                 }}
                 onClick={() => setShowThemeMenu(prev => !prev)}
-                title={isDark ? "Tema atual: escuro (clique para escolher)" : "Tema atual: claro (clique para escolher)"}
+                title={
+                  themeMode === 'system'
+                    ? 'Tema atual: sistema (clique para escolher)'
+                    : themeMode === 'dark'
+                      ? 'Tema atual: escuro (clique para escolher)'
+                      : 'Tema atual: claro (clique para escolher)'
+                }
                 >
-                  <i className={isDark ? "bi bi-sun" : "bi bi-moon"}></i>
+                  {themeMode === 'system' ? (
+                    <Monitor size={18} />
+                  ) : themeMode === 'dark' ? (
+                    <Moon size={18} />
+                  ) : (
+                    <Sun size={18} />
+                  )}
                 </button>
                 {showThemeMenu && (
                   <div style={{
@@ -358,9 +371,9 @@ const Layout = ({ children }) => {
                     zIndex: 1000
                   }}>
                     {[
-                      { label: 'Claro', value: 'light', icon: 'bi bi-sun' },
-                      { label: 'Escuro', value: 'dark', icon: 'bi bi-moon' },
-                      { label: 'Sistema', value: 'system', icon: 'bi bi-laptop' }
+                      { label: 'Claro', value: 'light' },
+                      { label: 'Escuro', value: 'dark' },
+                      { label: 'Sistema', value: 'system' }
                     ].map(opt => (
                       <button key={opt.value}
                         onClick={() => { setThemeMode(opt.value); setShowThemeMenu(false); }}
@@ -376,9 +389,11 @@ const Layout = ({ children }) => {
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = currentTheme.hoverBackground}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <i className={opt.icon}></i>
+                        {opt.value === 'light' && <Sun size={16} />}
+                        {opt.value === 'dark' && <Moon size={16} />}
+                        {opt.value === 'system' && <Monitor size={16} />}
                         <span style={{ fontFamily: 'Poppins, sans-serif' }}>{opt.label}</span>
-                        {themeMode === opt.value && <i className="bi bi-check" style={{ marginLeft: 'auto' }}></i>}
+                        {themeMode === opt.value && <span style={{ marginLeft: 'auto' }}>✓</span>}
                       </button>
                     ))}
                   </div>

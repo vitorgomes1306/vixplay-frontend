@@ -604,7 +604,7 @@ function Dash() {
             borderLeft: `4px solid ${currentTheme.primary}`,
             cursor: 'pointer',
             position: 'relative',
-            transition: 'all 0.s ease',
+            transition: 'all 0.3s ease',
             transform: 'translateX(0)'
           }}
           onMouseEnter={(e) => {

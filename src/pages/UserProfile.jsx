@@ -1442,8 +1442,8 @@ const UserProfile = () => {
                         )}
                         {company.name || '—'}
                       </span>
-                      <span>{company.email || '—'}</span>
-                      <span>{company.phone || '—'}</span>
+                      <span>{company.email || ''}</span>
+                      <span>{company.phone || ''}</span>
                       <span style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button
                           onClick={() => setDefaultCompanyLogo(company.id)}

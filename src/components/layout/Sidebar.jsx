@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAvatarUrl } from '../../utils/avatarUtils';
@@ -327,9 +327,8 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
               };
 
               return (
-                <>
+                <Fragment key={item.path}>
                   <div
-                    key="utils-parent"
                     style={parentStyles}
                     onClick={() => !isCollapsed && setUtilsOpen((prev) => !prev)}
                     title={isCollapsed ? item.name : ''}
@@ -365,13 +364,13 @@ const Sidebar = ({ onToggle, isHidden, isMobile, onMobileClose }) => {
                     )}
                   </div>
                   {!isCollapsed && utilsOpen && (
-                    <div key="utils-submenu" style={{}}>
+                    <div style={{}}>
                       <SubLink to="/utils/rss" label="Teste de RSS" icon="bi-rss" />
                       <SubLink to="/utils/shortener" label="Encurtador de Link" icon="bi-link-45deg" />
                       <SubLink to="/utils/qrcode" label="Gerador de QR Code" icon="bi-qr-code" />
                     </div>
                   )}
-                </>
+                </Fragment>
               );
             }
 

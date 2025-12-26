@@ -76,6 +76,7 @@ const Admin = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [expandedUsers, setExpandedUsers] = useState(new Set());
+  const [detailsUserId, setDetailsUserId] = useState(null);
 
   // Estados das configurações do sistema
   const [systemConfig, setSystemConfig] = useState({
@@ -144,7 +145,19 @@ const Admin = () => {
     try {
       const response = await apiService.get('/private/admin/stats');
       if (response.data) {
-        setStats(response.data);
+        const defaults = {
+          totalUsers: 0,
+          totalPanels: 0,
+          totalDevices: 0,
+          totalMedia: 0,
+          totalClients: 0,
+          totalCampaigns: 0,
+          totalRevenue: 0,
+          activeSubscriptions: 0,
+          monthlyGrowth: 0,
+          totalGlobalMedias: 0
+        };
+        setStats({ ...defaults, ...response.data });
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
@@ -179,12 +192,14 @@ const Admin = () => {
   // Função para carregar detalhes do usuário
   const loadUserDetails = async (userId) => {
     try {
-      const response = await apiService.get(`/private/admin/users/${userId}/details`);
-      if (response.data) {
-        setUserDetails(response.data);
-      }
+      // Evitar 404: usar endpoint existente para dispositivos do usuário
+      const devicesResp = await apiService.getUserDevices?.(userId);
+      const devices = devicesResp?.data ?? [];
+      setUserDetails({ panels: [], devices, media: [], clients: [], campaigns: [] });
     } catch (error) {
-      console.error('Erro ao carregar detalhes do usuário:', error);
+      // Se falhar (ex.: endpoint indisponível), ainda garantir fallback seguro
+      console.error('Erro ao carregar detalhes do usuário (devices):', error);
+      setUserDetails({ panels: [], devices: [], media: [], clients: [], campaigns: [] });
     }
   };
 
@@ -195,9 +210,91 @@ const Admin = () => {
       newExpanded.delete(userId);
     } else {
       newExpanded.add(userId);
+      setDetailsUserId(userId);
       loadUserDetails(userId);
     }
     setExpandedUsers(newExpanded);
+  };
+
+  // Handlers de exclusão (admin)
+  const handleDeletePanel = async (panelId) => {
+    if (!panelId) return;
+    if (!window.confirm('Excluir este Painel? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiService.deletePanel(panelId);
+      setSuccess('Painel excluído com sucesso');
+      await Promise.all([
+        loadStats(),
+        detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Erro ao excluir painel:', error);
+      setError('Erro ao excluir painel');
+    }
+  };
+
+  const handleDeleteDevice = async (deviceId) => {
+    if (!deviceId) return;
+    if (!window.confirm('Excluir este Dispositivo? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiService.deleteDevice(deviceId);
+      setSuccess('Dispositivo excluído com sucesso');
+      await Promise.all([
+        loadStats(),
+        detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Erro ao excluir dispositivo:', error);
+      setError('Erro ao excluir dispositivo');
+    }
+  };
+
+  const handleDeleteMedia = async (mediaId) => {
+    if (!mediaId) return;
+    if (!window.confirm('Excluir esta Mídia? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiService.deleteMedia(mediaId);
+      setSuccess('Mídia excluída com sucesso');
+      await Promise.all([
+        loadStats(),
+        detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Erro ao excluir mídia:', error);
+      setError('Erro ao excluir mídia');
+    }
+  };
+
+  const handleDeleteClient = async (clientId) => {
+    if (!clientId) return;
+    if (!window.confirm('Excluir este Cliente? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiService.deleteClient(clientId);
+      setSuccess('Cliente excluído com sucesso');
+      await Promise.all([
+        loadStats(),
+        detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      setError('Erro ao excluir cliente');
+    }
+  };
+
+  const handleDeleteCampaign = async (campaignId) => {
+    if (!campaignId) return;
+    if (!window.confirm('Excluir esta Campanha? Esta ação não pode ser desfeita.')) return;
+    try {
+      await apiService.deleteCampaign(campaignId);
+      setSuccess('Campanha excluída com sucesso');
+      await Promise.all([
+        loadStats(),
+        detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()
+      ]);
+    } catch (error) {
+      console.error('Erro ao excluir campanha:', error);
+      setError('Erro ao excluir campanha');
+    }
   };
 
   // Função para abrir modal de edição de usuário
@@ -488,6 +585,11 @@ const Admin = () => {
             setShowDeleteModal={setShowDeleteModal}
             setSelectedUser={setSelectedUser}
             userDetails={userDetails}
+            onDeletePanel={handleDeletePanel}
+            onDeleteDevice={handleDeleteDevice}
+            onDeleteMedia={handleDeleteMedia}
+            onDeleteClient={handleDeleteClient}
+            onDeleteCampaign={handleDeleteCampaign}
             styles={styles}
           />
         )}
@@ -546,6 +648,11 @@ const UsersTab = ({
   setShowDeleteModal,
   setSelectedUser,
   userDetails,
+  onDeletePanel,
+  onDeleteDevice,
+  onDeleteMedia,
+  onDeleteClient,
+  onDeleteCampaign,
   styles 
 }) => (
   <div>
@@ -589,6 +696,11 @@ const UsersTab = ({
           setShowDeleteModal={setShowDeleteModal}
           setSelectedUser={setSelectedUser}
           userDetails={userDetails}
+          onDeletePanel={onDeletePanel}
+          onDeleteDevice={onDeleteDevice}
+          onDeleteMedia={onDeleteMedia}
+          onDeleteClient={onDeleteClient}
+          onDeleteCampaign={onDeleteCampaign}
           styles={styles}
         />
       ))}
@@ -605,6 +717,11 @@ const UserCard = ({
   setShowDeleteModal, 
   setSelectedUser,
   userDetails,
+  onDeletePanel,
+  onDeleteDevice,
+  onDeleteMedia,
+  onDeleteClient,
+  onDeleteCampaign,
   styles 
 }) => (
   <div style={styles.userCard}>
@@ -657,13 +774,21 @@ const UserCard = ({
     </div>
 
     {isExpanded && userDetails && (
-      <UserDetailsExpanded userDetails={userDetails} styles={styles} />
+      <UserDetailsExpanded 
+        userDetails={userDetails} 
+        styles={styles}
+        onDeletePanel={onDeletePanel}
+        onDeleteDevice={onDeleteDevice}
+        onDeleteMedia={onDeleteMedia}
+        onDeleteClient={onDeleteClient}
+        onDeleteCampaign={onDeleteCampaign}
+      />
     )}
   </div>
 );
 
 // Componente de detalhes expandidos do usuário
-const UserDetailsExpanded = ({ userDetails, styles }) => (
+const UserDetailsExpanded = ({ userDetails, styles, onDeletePanel, onDeleteDevice, onDeleteMedia, onDeleteClient, onDeleteCampaign }) => (
   <div style={styles.userDetailsExpanded}>
     <div style={styles.detailsGrid}>
       <div style={styles.detailsSection}>
@@ -671,6 +796,13 @@ const UserDetailsExpanded = ({ userDetails, styles }) => (
         {userDetails.panels?.map(panel => (
           <div key={panel.id} style={styles.detailItem}>
             <span>{panel.name}</span>
+            <button
+              onClick={() => onDeletePanel(panel.id)}
+              style={styles.actionButton}
+              title="Excluir Painel"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
         ))}
       </div>
@@ -683,6 +815,13 @@ const UserDetailsExpanded = ({ userDetails, styles }) => (
             <span style={device.licenceActive ? styles.badge.active : styles.badge.blocked}>
               {device.licenceActive ? 'Ativo' : 'Inativo'}
             </span>
+            <button
+              onClick={() => onDeleteDevice(device.id)}
+              style={styles.actionButton}
+              title="Excluir Dispositivo"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
         ))}
       </div>
@@ -692,9 +831,52 @@ const UserDetailsExpanded = ({ userDetails, styles }) => (
         {userDetails.media?.map(media => (
           <div key={media.id} style={styles.detailItem}>
             <span>{media.title}</span>
+            <button
+              onClick={() => onDeleteMedia(media.id)}
+              style={styles.actionButton}
+              title="Excluir Mídia"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
         ))}
       </div>
+
+      {Array.isArray(userDetails.clients) && (
+        <div style={styles.detailsSection}>
+          <h4 style={styles.detailsTitle}>Clientes ({userDetails.clients?.length || 0})</h4>
+          {userDetails.clients?.map(client => (
+            <div key={client.id} style={styles.detailItem}>
+              <span>{client.name || client.workName || client.email}</span>
+              <button
+                onClick={() => onDeleteClient(client.id)}
+                style={styles.actionButton}
+                title="Excluir Cliente"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {Array.isArray(userDetails.campaigns) && (
+        <div style={styles.detailsSection}>
+          <h4 style={styles.detailsTitle}>Campanhas ({userDetails.campaigns?.length || 0})</h4>
+          {userDetails.campaigns?.map(campaign => (
+            <div key={campaign.id} style={styles.detailItem}>
+              <span>{campaign.title || campaign.name}</span>
+              <button
+                onClick={() => onDeleteCampaign(campaign.id)}
+                style={styles.actionButton}
+                title="Excluir Campanha"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   </div>
 );
@@ -1175,7 +1357,8 @@ const getStyles = (theme) => ({
 
   activeTab: {
     color: theme.primary,
-    borderBottomColor: theme.primary
+    // Evitar mistura de shorthand/non-shorthand. Use borderBottom completo.
+    borderBottom: `2px solid ${theme.primary}`
   },
 
   tabContent: {
