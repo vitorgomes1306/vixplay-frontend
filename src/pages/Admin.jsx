@@ -708,7 +708,7 @@ const Admin = () => {
             onClick={() => navigate('/batch-license')}
           >
             <Package size={20} />
-            Licenciamento em Lote
+            Licenciar Devices em Lote
           </button>
         </div>
       </div>

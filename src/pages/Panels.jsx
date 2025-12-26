@@ -449,7 +449,7 @@ const Panels = () => {
           onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
         >
           <i className="bi bi-plus-lg"></i>
-          Novo Painel
+          Painel
         </button>
       </div>
 
