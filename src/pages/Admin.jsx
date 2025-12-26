@@ -934,6 +934,7 @@ const UserDetailsModal = ({
   refreshDetails
 }) => {
   const { currentTheme } = useTheme();
+  const navigate = useNavigate();
   const [previewMedia, setPreviewMedia] = useState(null);
   const [editingMedia, setEditingMedia] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', url: '', type: '' });
@@ -1023,7 +1024,7 @@ const UserDetailsModal = ({
 
           {!detailsLoading && tab === 'usuario' && (
             <div style={styles.detailsSection}>
-              <h4 style={styles.detailsTitle}>Perfil</h4>
+              
 
               {/* Foto do perfil */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0 16px 0' }}>
@@ -1159,14 +1160,85 @@ const UserDetailsModal = ({
           {!detailsLoading && tab === 'dispositivos' && Array.isArray(details?.devices) && (
             <div style={styles.detailsSection}>
               <h4 style={styles.detailsTitle}>Dispositivos ({details.devices.length})</h4>
-              {details.devices.map((device) => (
-                <div key={device.id} style={styles.detailItem}>
-                  <span>{device.name || device.serialNumber || device.macAddress}</span>
-                  <button onClick={() => onDeleteDevice(device.id)} style={styles.actionButton} title="Excluir Dispositivo">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
+              <div style={styles.devicesGrid}>
+                {details.devices.map((device) => {
+                  const title = device?.name || device?.serialNumber || device?.macAddress || `Dispositivo ${device?.id}`;
+                  const subtitle = device?.macAddress ? `MAC: ${device.macAddress}` : (device?.serialNumber ? `SN: ${device.serialNumber}` : '');
+                  const isActive = (typeof device?.isActive === 'boolean') ? device.isActive
+                    : (typeof device?.active === 'boolean') ? device.active
+                    : (device?.ativo ? String(device.ativo).toLowerCase() === 'ativo' : (device?.status ? String(device.status).toLowerCase() === 'ativo' : undefined));
+                  const lastConn = device?.lastConnection || device?.lastSeen || device?.lastConn;
+                  let isOnline;
+                  if (lastConn) {
+                    try {
+                      const last = new Date(lastConn);
+                      const diffMin = (Date.now() - last.getTime()) / (1000 * 60);
+                      isOnline = diffMin <= 10; // considera online se conectou nos últimos 10 min
+                    } catch (_) {
+                      isOnline = undefined;
+                    }
+                  }
+                  const isLicensed = (typeof device?.isLicensed === 'boolean') ? device.isLicensed
+                    : (typeof device?.licenceActive === 'boolean') ? device.licenceActive
+                    : (device?.lastLicenseCheck ? true : undefined);
+
+                  return (
+                    <div key={device.id || title} style={styles.deviceCard}>
+                      <div style={styles.deviceHeader}>
+                        <div style={styles.deviceTitle}>
+                          <Monitor size={18} />
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+                        </div>
+                        <div style={styles.deviceActions}>
+                          <button
+                            onClick={() => navigate(`/device/${device.id}`)}
+                            style={styles.actionButton}
+                            title="Vizualizar"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => navigate(`/device/${device.id}`)}
+                            style={styles.actionButton}
+                            title="Editar"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => onDeleteDevice(device.id)}
+                            style={styles.actionButton}
+                            title="Excluir"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {subtitle && (
+                        <div style={styles.deviceMeta}>{subtitle}</div>
+                      )}
+
+                      <div style={styles.deviceBadges}>
+                        {isActive !== undefined && (
+                          <span className={`badge ${isActive ? 'bg-success' : 'bg-secondary'} rounded-pill`}>
+                            {isActive ? 'Ativo' : 'Inativo'}
+                          </span>
+                        )}
+                        {isOnline !== undefined && (
+                          <span className={`badge ${isOnline ? 'bg-success' : 'bg-danger'} rounded-pill`}>
+                            {isOnline ? 'Online' : 'Offline'}
+                          </span>
+                        )}
+                        {isLicensed !== undefined && (
+                          <span className={`badge ${isLicensed ? 'bg-success' : 'bg-warning'} rounded-pill`}>
+                            {isLicensed ? 'Licenciado' : 'Não licenciado'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -1895,6 +1967,60 @@ const getStyles = (theme) => ({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
     gap: '16px'
+  },
+
+  // Dispositivos (grid de cards)
+  devicesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '16px'
+  },
+
+  deviceCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '12px',
+    padding: '12px'
+  },
+
+  deviceHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px'
+  },
+
+  deviceTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    color: theme.textPrimary
+  },
+
+  deviceMeta: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    color: theme.textSecondary,
+    fontSize: '13px'
+  },
+
+  deviceBadges: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '8px'
+  },
+
+  deviceActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
   },
 
   mediaCard: {
