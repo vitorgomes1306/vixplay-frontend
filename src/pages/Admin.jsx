@@ -1928,12 +1928,16 @@ const getStyles = (theme) => ({
   },
 
   tabsContainer: {
-    marginBottom: '24px'
+    marginBottom: '24px',
+    overflowX: 'auto',
+    WebkitOverflowScrolling: 'touch'
   },
 
   tabs: {
     display: 'flex',
-    borderBottom: `2px solid ${theme.border}`
+    borderBottom: `2px solid ${theme.border}`,
+    flexWrap: 'nowrap',
+    width: 'max-content'
   },
 
   tab: {
@@ -1947,7 +1951,8 @@ const getStyles = (theme) => ({
     fontSize: '16px',
     color: theme.textSecondary,
     borderBottom: '2px solid transparent',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    flex: '0 0 auto'
   },
 
   activeTab: {
