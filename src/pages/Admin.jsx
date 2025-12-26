@@ -34,11 +34,18 @@ import {
   Package,
   Building2,
   LayoutDashboard,
-  Image
+  Image,
+  Globe,
+  Megaphone,
+  Star,
+  Mail,
+  Phone,
+  Smartphone
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { getAvatarUrl } from '../utils/avatarUtils';
 
 const Admin = () => {
   const { currentTheme } = useTheme();
@@ -116,7 +123,13 @@ const Admin = () => {
     workName: '',
     cellphone: '',
     pictureUrl: '',
-    dayOfPayment: 1,
+    picture: '',
+    zipCode: '',
+    state: '',
+    city: '',
+    street: '',
+    number: '',
+    complement: '',
     isAdmin: false,
     isBlocked: false,
     password: ''
@@ -290,10 +303,36 @@ const Admin = () => {
         campaigns = clients.flatMap(c => Array.isArray(c.campaigns) ? c.campaigns : []);
       }
 
-      setUserDetails({ panels, devices, media, clients, campaigns });
+      // Empresas (Works): tentar rota dedicada do Admin e normalizar
+      let works = [];
+      try {
+        const worksResp = await apiService.getUserWorks(userId);
+        const data = worksResp?.data;
+        if (Array.isArray(data)) {
+          works = data;
+        } else if (data && typeof data === 'object') {
+          const keys = ['items', 'list', 'data', 'works', 'empresas'];
+          for (const k of keys) {
+            const v = data[k];
+            if (Array.isArray(v)) { works = v; break; }
+          }
+        }
+      } catch (_) {
+        works = [];
+      }
+
+      // Fallback: se veio todas as works, tentar filtrar por possíveis campos do usuário
+      if (Array.isArray(works) && works.length > 0) {
+        works = works.filter((w) => {
+          const ownerId = w?.userId || w?.ownerId || w?.owner?.id;
+          return ownerId ? String(ownerId) === String(userId) : true;
+        });
+      }
+
+      setUserDetails({ panels, devices, media, clients, campaigns, works });
     } catch (error) {
       console.error('Erro ao carregar detalhes do usuário:', error);
-      setUserDetails({ panels: [], devices: [], media: [], clients: [], campaigns: [] });
+      setUserDetails({ panels: [], devices: [], media: [], clients: [], campaigns: [], works: [] });
     }
   };
 
@@ -405,7 +444,13 @@ const Admin = () => {
       workName: user.workName || '',
       cellphone: user.cellphone || '',
       pictureUrl: user.pictureUrl || '',
-      dayOfPayment: user.dayOfPayment || 1,
+      picture: user.picture || '',
+      zipCode: user.zipCode || '',
+      state: user.state || '',
+      city: user.city || '',
+      street: user.street || '',
+      number: user.number || '',
+      complement: user.complement || '',
       isAdmin: user.isAdmin || false,
       isBlocked: user.isBlocked || false,
       password: ''
@@ -559,7 +604,7 @@ const Admin = () => {
 
         <div style={styles.statCard}>
           <div style={styles.statIcon}>
-            <Monitor size={24} />
+            <LayoutDashboard size={24} />
           </div>
           <div style={styles.statContent}>
             <h3 style={styles.statNumber}>{stats.totalPanels}</h3>
@@ -569,7 +614,7 @@ const Admin = () => {
 
         <div style={styles.statCard}>
           <div style={styles.statIcon}>
-            <Database size={24} />
+            <Monitor size={24} />
           </div>
           <div style={styles.statContent}>
             <h3 style={styles.statNumber}>{stats.totalDevices}</h3>
@@ -579,7 +624,7 @@ const Admin = () => {
 
         <div style={styles.statCard}>
           <div style={styles.statIcon}>
-            <FileText size={24} />
+            <Image size={24} />
           </div>
           <div style={styles.statContent}>
             <h3 style={styles.statNumber}>{stats.totalMedia}</h3>
@@ -589,7 +634,7 @@ const Admin = () => {
 
         <div style={styles.statCard}>
           <div style={styles.statIcon}>
-            <Target size={24} />
+            <Users size={24} />
           </div>
           <div style={styles.statContent}>
             <h3 style={styles.statNumber}>{stats.totalClients}</h3>
@@ -599,7 +644,7 @@ const Admin = () => {
 
         <div style={styles.statCard}>
           <div style={styles.statIcon}>
-            <Activity size={24} />
+            <Megaphone size={24} />
           </div>
           <div style={styles.statContent}>
             <h3 style={styles.statNumber}>{stats.totalCampaigns}</h3>
@@ -612,7 +657,7 @@ const Admin = () => {
               cursor="pointer"
          >
           <div style={styles.statIcon}>
-            <Activity size={24} />
+            <Globe size={24} />
           </div>
           
           <div style={styles.statContent}>
@@ -816,12 +861,17 @@ const UserCard = ({
   <div style={styles.userCard}>
     <div style={styles.userCardHeader}>
       <div style={styles.userInfo}>
+        
         <div style={styles.userAvatar}>
-          {user.pictureUrl ? (
-            <img src={user.pictureUrl} alt={user.name} style={styles.avatarImage} />
+          {user.picture ? (
+            <img src={getAvatarUrl(user.picture)} alt={user.name} style={styles.avatarImage} />
+            
+           
           ) : (
             <User size={24} />
+            
           )}
+          
         </div>
         <div style={styles.userDetails}>
           <h3 style={styles.userName}>{user.name}</h3>
@@ -883,9 +933,11 @@ const UserDetailsModal = ({
   onDeleteCampaign,
   refreshDetails
 }) => {
+  const { currentTheme } = useTheme();
   const [previewMedia, setPreviewMedia] = useState(null);
   const [editingMedia, setEditingMedia] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', url: '', type: '' });
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const openPreview = (m) => {
     setPreviewMedia(m);
@@ -901,6 +953,10 @@ const UserDetailsModal = ({
     setPreviewMedia(null);
     setEditingMedia(null);
   };
+  const openAvatarPreview = () => {
+    if (user?.picture) setShowAvatarModal(true);
+  };
+  const closeAvatarPreview = () => setShowAvatarModal(false);
   const startEditing = () => {
     if (!previewMedia) return;
     setEditingMedia(previewMedia);
@@ -943,7 +999,7 @@ const UserDetailsModal = ({
               { key: 'paineis', label: 'Paineis', Icon: LayoutDashboard },
               { key: 'midias', label: 'Midias', Icon: Image },
               { key: 'clientes', label: 'Clientes', Icon: Users },
-              { key: 'campanhas', label: 'Campanhas', Icon: Target },
+            { key: 'campanhas', label: 'Campanhas', Icon: Megaphone },
               { key: 'logs', label: 'Logs', Icon: FileText },
             ].map(t => (
               <button
@@ -968,12 +1024,83 @@ const UserDetailsModal = ({
           {!detailsLoading && tab === 'usuario' && (
             <div style={styles.detailsSection}>
               <h4 style={styles.detailsTitle}>Perfil</h4>
+
+              {/* Foto do perfil */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0 16px 0' }}>
+                {user?.picture ? (
+                  <img
+                    src={getAvatarUrl(user.picture)}
+                    alt={user?.name || 'Foto do perfil'}
+                    style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', cursor: 'zoom-in' }}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    onClick={openAvatarPreview}
+                  />
+                ) : (
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #e2e8f0' }}>
+              <User size={32} color={currentTheme.textSecondary} />
+                  </div>
+                )}
+                <strong>Foto do perfil</strong>
+              </div>
+
+              {/* Campos principais */}
               <div style={styles.detailItem}><span>Nome</span><span>{user?.name}</span></div>
               <div style={styles.detailItem}><span>E-mail</span><span>{user?.email}</span></div>
               <div style={styles.detailItem}><span>Status</span><span>{user?.isBlocked ? 'Bloqueado' : 'Ativo'}</span></div>
               <div style={styles.detailItem}><span>Tipo</span><span>{user?.isAdmin ? 'Admin' : 'Usuário'}</span></div>
-              {user?.dayOfPayment !== undefined && (
-                <div style={styles.detailItem}><span>Dia de Pagamento</span><span>{user?.dayOfPayment}</span></div>
+              {user?.cpfCnpj && (
+                <div style={styles.detailItem}><span>CPF/CNPJ</span><span>{user.cpfCnpj}</span></div>
+              )}
+              {user?.cellphone && (
+                <div style={styles.detailItem}><span>Celular</span><span>{user.cellphone}</span></div>
+              )}
+              {user?.workName && (
+                <div style={styles.detailItem}><span>Empresa</span><span>{user.workName}</span></div>
+              )}
+
+              {/* Endereço, se disponível */}
+              {user?.zipCode && (
+                <div style={styles.detailItem}><span>CEP</span><span>{user.zipCode}</span></div>
+              )}
+              {user?.state && (
+                <div style={styles.detailItem}><span>Estado</span><span>{user.state}</span></div>
+              )}
+              {user?.city && (
+                <div style={styles.detailItem}><span>Cidade</span><span>{user.city}</span></div>
+              )}
+              {user?.street && (
+                <div style={styles.detailItem}><span>Rua</span><span>{user.street}</span></div>
+              )}
+              {user?.number && (
+                <div style={styles.detailItem}><span>Número</span><span>{user.number}</span></div>
+              )}
+              {user?.complement && (
+                <div style={styles.detailItem}><span>Complemento</span><span>{user.complement}</span></div>
+              )}
+
+              {/* Lightbox de ampliação da foto do perfil */}
+              {showAvatarModal && user?.picture && (
+                <div style={styles.modalOverlay} onClick={closeAvatarPreview}>
+                  <div style={styles.lightbox} onClick={(e) => e.stopPropagation()}>
+                    <div style={styles.lightboxHeader}>
+                      <h4 style={styles.modalTitle}>{user?.name || 'Foto do perfil'}</h4>
+                      <button onClick={closeAvatarPreview} style={styles.modalCloseButton} title="Fechar">
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <div style={styles.lightboxBody}>
+                      <img src={getAvatarUrl(user.picture)} alt={user?.name || 'Foto do perfil'} style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Data de cadastro */}
+              {user?.createdAt && (
+                <div style={styles.detailItem}>
+                  <span>Data de Cadastro</span>
+                  <span>{new Date(user.createdAt).toLocaleString('pt-BR')}</span>
+                </div>
               )}
             </div>
           )}
@@ -981,9 +1108,51 @@ const UserDetailsModal = ({
           {!detailsLoading && tab === 'empresas' && (
             <div style={styles.detailsSection}>
               <h4 style={styles.detailsTitle}>Empresas relacionadas</h4>
-              <div style={{ padding: 12, color: '#64748b' }}>
-                Exibição de empresas do usuário alvo será adicionada. No momento, utilize a aba "Minhas Empresas" no perfil.
-              </div>
+              {Array.isArray(details?.works) && details.works.length > 0 ? (
+                <div>
+                  {details.works.map((c, idx) => (
+                    <div key={c.id || idx} style={styles.detailItem}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {c.logo ? (
+                          <img src={c.logo} alt="Logo" style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover', border: '1px solid #e5e7eb' }} />
+                        ) : (
+                          <Building2 size={18} color={currentTheme.textSecondary} />
+                        )}
+                        <span>{c.name || c.fantasyName || c.workName || '—'}</span>
+                        {c.defaultLogo && <Star size={14} color={currentTheme.primary} title="Logo padrão" />}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 16, color: currentTheme.textSecondary }}>
+                        {c.email && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <Mail size={14} color={currentTheme.textSecondary} />
+                            <span>{c.email}</span>
+                          </span>
+                        )}
+                        {c.phone && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <Phone size={14} color={currentTheme.textSecondary} />
+                            <span>{c.phone}</span>
+                          </span>
+                        )}
+                        {c.cellPhone && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <Smartphone size={14} color={currentTheme.textSecondary} />
+                            <span>{c.cellPhone}</span>
+                          </span>
+                        )}
+                        {c.cnpj && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <FileText size={14} color={currentTheme.textSecondary} />
+                            <span>{c.cnpj}</span>
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: 12, color: '#64748b' }}>Nenhuma empresa relacionada.</div>
+              )}
             </div>
           )}
 
@@ -1342,6 +1511,24 @@ const EditUserModal = ({
       </div>
 
       <div style={styles.modalBody}>
+        {/* Avatar no topo do modal */}
+        <strong>Foto do perfil</strong>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          
+          <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #e2e8f0' }}>
+              <User size={40} color={currentTheme.textSecondary} style={{ display: (editUserData.picture || editUserData.pictureUrl) ? 'none' : 'inline' }} />
+          
+          </div>
+          {(editUserData.picture || editUserData.pictureUrl) && (
+            <img
+              src={getAvatarUrl(editUserData.picture || editUserData.pictureUrl)}
+              alt="Foto do perfil"
+              style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', marginLeft: -108 }}
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          )}
+        </div>
+
         <div style={styles.formGrid}>
           <div style={styles.formGroup}>
             <label style={styles.label}>Nome</label>
@@ -1364,7 +1551,7 @@ const EditUserModal = ({
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>CPF/CNPJ</label>
+            <label style={styles.label}>CPF</label>
             <input
               type="text"
               value={editUserData.cpfCnpj}
@@ -1384,16 +1571,66 @@ const EditUserModal = ({
           </div>
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Dia do Pagamento</label>
+            <label style={styles.label}>CEP</label>
             <input
-              type="number"
-              min="1"
-              max="31"
-              value={editUserData.dayOfPayment}
-              onChange={(e) => setEditUserData({...editUserData, dayOfPayment: parseInt(e.target.value)})}
+              type="text"
+              value={editUserData.zipCode}
+              onChange={(e) => setEditUserData({...editUserData, zipCode: e.target.value})}
               style={styles.input}
             />
           </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Estado</label>
+            <input
+              type="text"
+              value={editUserData.state}
+              onChange={(e) => setEditUserData({...editUserData, state: e.target.value})}
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Cidade</label>
+            <input
+              type="text"
+              value={editUserData.city}
+              onChange={(e) => setEditUserData({...editUserData, city: e.target.value})}
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Rua</label>
+            <input
+              type="text"
+              value={editUserData.street}
+              onChange={(e) => setEditUserData({...editUserData, street: e.target.value})}
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Número</label>
+            <input
+              type="text"
+              value={editUserData.number}
+              onChange={(e) => setEditUserData({...editUserData, number: e.target.value})}
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Complemento</label>
+            <input
+              type="text"
+              value={editUserData.complement}
+              onChange={(e) => setEditUserData({...editUserData, complement: e.target.value})}
+              style={styles.input}
+            />
+          </div>
+
+          
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Nova Senha (opcional)</label>
@@ -1837,7 +2074,7 @@ const getStyles = (theme) => ({
 
   userEmail: {
     fontSize: '14px',
-    color: theme.textPrimarySecondary,
+    color: theme.textSecondary,
     margin: 0
   },
 
@@ -1884,7 +2121,7 @@ const getStyles = (theme) => ({
     border: `1px solid ${theme.border}`,
     borderRadius: '6px',
     backgroundColor: theme.cardBackground,
-    color: theme.textPrimarySecondary,
+    color: theme.textSecondary,
     cursor: 'pointer',
     transition: 'all 0.2s',
     display: 'flex',
@@ -2153,7 +2390,7 @@ const getStyles = (theme) => ({
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    color: theme.textPrimarySecondary,
+    color: theme.textSecondary,
     borderRadius: '4px'
   },
 

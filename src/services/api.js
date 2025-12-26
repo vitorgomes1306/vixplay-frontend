@@ -269,6 +269,25 @@ export const apiService = {
       throw err;
     }
   },
+  // Admin - User Works (Empresas) com fallbacks
+  getUserWorks: async (userId) => {
+    // Tenta rota dedicada do admin; se não existir, tenta variações e fallback com query
+    try {
+      return await api.get(`/private/admin/users/${userId}/works`);
+    } catch (err1) {
+      try {
+        return await api.get(`/private/admin/users/${userId}/empresas`);
+      } catch (err2) {
+        try {
+          // Alguns backends permitem filtrar por query
+          return await api.get(`/private/works?userId=${encodeURIComponent(userId)}`);
+        } catch (err3) {
+          // Fallback final: retorna todas as works e deixa a filtragem para o cliente
+          return await api.get('/private/works');
+        }
+      }
+    }
+  },
   createUser: (data) => api.post(getConfig().API_ENDPOINTS.USERS, data),
   updateUser: (id, data) => api.put(`${getConfig().API_ENDPOINTS.UPDATE_USER}/${id}`, data),
   deleteUser: (id) => api.delete(`${getConfig().API_ENDPOINTS.USERS}/${id}`),
