@@ -1569,194 +1569,194 @@ const EditUserModal = ({
   saveUserChanges, 
   setShowEditUserModal, 
   styles 
-}) => (
-  <div style={styles.modalOverlay}>
-    <div style={styles.modal}>
-      <div style={styles.modalHeader}>
-        <h3 style={styles.modalTitle}>Editar Usuário</h3>
-        <button
-          onClick={() => setShowEditUserModal(false)}
-          style={styles.modalCloseButton}
-        >
-          <X size={20} />
-        </button>
-      </div>
+}) => {
+  const { currentTheme } = useTheme();
 
-      <div style={styles.modalBody}>
-        {/* Avatar no topo do modal */}
-        <strong>Foto do perfil</strong>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          
-          <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #e2e8f0' }}>
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modal}>
+        <div style={styles.modalHeader}>
+          <h3 style={styles.modalTitle}>Editar Usuário</h3>
+          <button
+            onClick={() => setShowEditUserModal(false)}
+            style={styles.modalCloseButton}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div style={styles.modalBody}>
+          {/* Avatar no topo do modal */}
+          <strong>Foto do perfil</strong>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #e2e8f0' }}>
               <User size={40} color={currentTheme.textSecondary} style={{ display: (editUserData.picture || editUserData.pictureUrl) ? 'none' : 'inline' }} />
-          
+            </div>
+            {(editUserData.picture || editUserData.pictureUrl) && (
+              <img
+                src={getAvatarUrl(editUserData.picture || editUserData.pictureUrl)}
+                alt="Foto do perfil"
+                style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', marginLeft: -108 }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            )}
           </div>
-          {(editUserData.picture || editUserData.pictureUrl) && (
-            <img
-              src={getAvatarUrl(editUserData.picture || editUserData.pictureUrl)}
-              alt="Foto do perfil"
-              style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '2px solid #e2e8f0', marginLeft: -108 }}
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          )}
+
+          <div style={styles.formGrid}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Nome</label>
+              <input
+                type="text"
+                value={editUserData.name}
+                onChange={(e) => setEditUserData({...editUserData, name: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Email</label>
+              <input
+                type="email"
+                value={editUserData.email}
+                onChange={(e) => setEditUserData({...editUserData, email: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>CPF</label>
+              <input
+                type="text"
+                value={editUserData.cpfCnpj}
+                onChange={(e) => setEditUserData({...editUserData, cpfCnpj: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Celular</label>
+              <input
+                type="text"
+                value={editUserData.cellphone}
+                onChange={(e) => setEditUserData({...editUserData, cellphone: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>CEP</label>
+              <input
+                type="text"
+                value={editUserData.zipCode}
+                onChange={(e) => setEditUserData({...editUserData, zipCode: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Estado</label>
+              <input
+                type="text"
+                value={editUserData.state}
+                onChange={(e) => setEditUserData({...editUserData, state: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Cidade</label>
+              <input
+                type="text"
+                value={editUserData.city}
+                onChange={(e) => setEditUserData({...editUserData, city: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Rua</label>
+              <input
+                type="text"
+                value={editUserData.street}
+                onChange={(e) => setEditUserData({...editUserData, street: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Número</label>
+              <input
+                type="text"
+                value={editUserData.number}
+                onChange={(e) => setEditUserData({...editUserData, number: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Complemento</label>
+              <input
+                type="text"
+                value={editUserData.complement}
+                onChange={(e) => setEditUserData({...editUserData, complement: e.target.value})}
+                style={styles.input}
+              />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Nova Senha (opcional)</label>
+              <input
+                type="password"
+                value={editUserData.password}
+                onChange={(e) => setEditUserData({...editUserData, password: e.target.value})}
+                style={styles.input}
+                placeholder="Deixe em branco para manter a atual"
+              />
+            </div>
+          </div>
+
+          <div style={styles.checkboxGroup}>
+            <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={editUserData.isAdmin}
+                onChange={(e) => setEditUserData({...editUserData, isAdmin: e.target.checked})}
+                style={styles.checkbox}
+              />
+              Administrador
+            </label>
+
+            <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={editUserData.isBlocked}
+                onChange={(e) => setEditUserData({...editUserData, isBlocked: e.target.checked})}
+                style={styles.checkbox}
+              />
+              Bloqueado
+            </label>
+          </div>
         </div>
 
-        <div style={styles.formGrid}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Nome</label>
-            <input
-              type="text"
-              value={editUserData.name}
-              onChange={(e) => setEditUserData({...editUserData, name: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
-            <input
-              type="email"
-              value={editUserData.email}
-              onChange={(e) => setEditUserData({...editUserData, email: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>CPF</label>
-            <input
-              type="text"
-              value={editUserData.cpfCnpj}
-              onChange={(e) => setEditUserData({...editUserData, cpfCnpj: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Celular</label>
-            <input
-              type="text"
-              value={editUserData.cellphone}
-              onChange={(e) => setEditUserData({...editUserData, cellphone: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>CEP</label>
-            <input
-              type="text"
-              value={editUserData.zipCode}
-              onChange={(e) => setEditUserData({...editUserData, zipCode: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Estado</label>
-            <input
-              type="text"
-              value={editUserData.state}
-              onChange={(e) => setEditUserData({...editUserData, state: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Cidade</label>
-            <input
-              type="text"
-              value={editUserData.city}
-              onChange={(e) => setEditUserData({...editUserData, city: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Rua</label>
-            <input
-              type="text"
-              value={editUserData.street}
-              onChange={(e) => setEditUserData({...editUserData, street: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Número</label>
-            <input
-              type="text"
-              value={editUserData.number}
-              onChange={(e) => setEditUserData({...editUserData, number: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Complemento</label>
-            <input
-              type="text"
-              value={editUserData.complement}
-              onChange={(e) => setEditUserData({...editUserData, complement: e.target.value})}
-              style={styles.input}
-            />
-          </div>
-
-          
-
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Nova Senha (opcional)</label>
-            <input
-              type="password"
-              value={editUserData.password}
-              onChange={(e) => setEditUserData({...editUserData, password: e.target.value})}
-              style={styles.input}
-              placeholder="Deixe em branco para manter a atual"
-            />
-          </div>
+        <div style={styles.modalFooter}>
+          <button
+            onClick={() => setShowEditUserModal(false)}
+            style={styles.secondaryButton}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={saveUserChanges}
+            style={styles.primaryButton}
+          >
+            <Check size={16} />
+            Salvar Alterações
+          </button>
         </div>
-
-        <div style={styles.checkboxGroup}>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={editUserData.isAdmin}
-              onChange={(e) => setEditUserData({...editUserData, isAdmin: e.target.checked})}
-              style={styles.checkbox}
-            />
-            Administrador
-          </label>
-
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={editUserData.isBlocked}
-              onChange={(e) => setEditUserData({...editUserData, isBlocked: e.target.checked})}
-              style={styles.checkbox}
-            />
-            Bloqueado
-          </label>
-        </div>
-      </div>
-
-      <div style={styles.modalFooter}>
-        <button
-          onClick={() => setShowEditUserModal(false)}
-          style={styles.secondaryButton}
-        >
-          Cancelar
-        </button>
-        <button
-          onClick={saveUserChanges}
-          style={styles.primaryButton}
-        >
-          <Check size={16} />
-          Salvar Alterações
-        </button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Modal de confirmação de exclusão
 const DeleteModal = ({ selectedUser, deleteUser, setShowDeleteModal, styles }) => (
@@ -2151,14 +2151,18 @@ const getStyles = (theme) => ({
     backgroundColor: theme.background,
     border: `1px solid ${theme.border}`,
     borderRadius: '12px',
-    overflow: 'hidden'
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'visible'
   },
 
   userCardHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '20px'
+    padding: '20px',
+    flexWrap: 'wrap',
+    rowGap: '12px'
   },
 
   userInfo: {
@@ -2239,7 +2243,10 @@ const getStyles = (theme) => ({
 
   userActions: {
     display: 'flex',
-    gap: '8px'
+    gap: '8px',
+    flexWrap: 'wrap',
+    maxWidth: '100%',
+    overflowX: 'auto'
   },
 
   actionButton: {
