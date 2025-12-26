@@ -1169,11 +1169,13 @@ const UserDetailsModal = ({
                     : (device?.ativo ? String(device.ativo).toLowerCase() === 'ativo' : (device?.status ? String(device.status).toLowerCase() === 'ativo' : undefined));
                   const lastConn = device?.lastConnection || device?.lastSeen || device?.lastConn;
                   let isOnline;
-                  if (lastConn) {
+                  if (typeof device?.statusDevice === 'boolean') {
+                    isOnline = device.statusDevice; // usar statusDevice quando disponível
+                  } else if (lastConn) {
                     try {
                       const last = new Date(lastConn);
                       const diffMin = (Date.now() - last.getTime()) / (1000 * 60);
-                      isOnline = diffMin <= 10; // considera online se conectou nos últimos 10 min
+                      isOnline = diffMin <= 10;
                     } catch (_) {
                       isOnline = undefined;
                     }
@@ -1181,6 +1183,13 @@ const UserDetailsModal = ({
                   const isLicensed = (typeof device?.isLicensed === 'boolean') ? device.isLicensed
                     : (typeof device?.licenceActive === 'boolean') ? device.licenceActive
                     : (device?.lastLicenseCheck ? true : undefined);
+
+                  const associatedPanel = (Array.isArray(details?.panels)
+                    ? details.panels.find(p => p.id === (device?.panelId || device?.panel?.id))
+                    : undefined) || device?.panel;
+                  const panelLabel = associatedPanel
+                    ? (associatedPanel.name || associatedPanel.title || `#${associatedPanel.id}`)
+                    : (device?.panelId ? `#${device.panelId}` : '—');
 
                   return (
                     <div key={device.id || title} style={styles.deviceCard}>
@@ -1234,6 +1243,37 @@ const UserDetailsModal = ({
                             {isLicensed ? 'Licenciado' : 'Não licenciado'}
                           </span>
                         )}
+                      </div>
+
+                      <div style={styles.deviceInfoGrid}>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Painel</span>
+                          <span style={styles.deviceValue}>{panelLabel}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Chave</span>
+                          <span style={styles.deviceValue}>{device?.deviceKey || '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Formato</span>
+                          <span style={styles.deviceValue}>{device?.format || '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Tipo</span>
+                          <span style={styles.deviceValue}>{device?.type || '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Criado em</span>
+                          <span style={styles.deviceValue}>{device?.createdAt ? new Date(device.createdAt).toLocaleDateString('pt-BR') : '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>IP</span>
+                          <span style={styles.deviceValue}>{device?.ipAddress || '—'}</span>
+                        </div>
+                        <div style={styles.deviceInfoItem}>
+                          <span style={styles.deviceLabel}>Última conexão</span>
+                          <span style={styles.deviceValue}>{lastConn ? new Date(lastConn).toLocaleString('pt-BR') : 'Nunca conectado'}</span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -2020,6 +2060,35 @@ const getStyles = (theme) => ({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '8px'
+  },
+
+  deviceInfoGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: '8px',
+    marginTop: '8px'
+  },
+
+  deviceInfoItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '8px',
+    color: theme.textSecondary,
+    fontSize: '12px'
+  },
+
+  deviceLabel: {
+    color: theme.textSecondary,
+    fontWeight: 600
+  },
+
+  deviceValue: {
+    color: theme.textPrimary,
+    fontSize: '13px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
   },
 
   deviceActions: {

@@ -804,16 +804,6 @@ const DeviceDetail = () => {
       minHeight: '100vh',
       fontFamily: 'Poppins, sans-serif'
     }}>
-      {/* Alert Bootstrap */}
-      {alert && (
-        <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert" style={{
-          marginBottom: '1rem',
-          fontFamily: 'Poppins, sans-serif'
-        }}>
-          {alert.message}
-          
-        </div>
-      )}
 
       {/* Header */}
       <div style={{

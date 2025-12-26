@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { getAvatarUrl, updateUserAvatar } from '../utils/avatarUtils';
 import alertaIcon from '../assets/img/alerta.png';
-import { Plus, Edit2, Trash2, Building2, CheckCircle, AlertCircle, X, Star } from 'lucide-react';
+import { Plus, Edit2, Trash2, Building2, CreditCard, CheckCircle, AlertCircle, X, Star } from 'lucide-react';
 
 const UserProfile = () => {
   const { currentTheme } = useTheme();
@@ -1499,30 +1499,36 @@ const UserProfile = () => {
                       <X size={18} />
                     </button>
                   </div>
-                  {/* Tabs do modal */}
-                  <div style={{ padding: '0.75rem 1.25rem', borderBottom: `1px solid ${currentTheme.border}`, display: 'flex', gap: '0.5rem' }}>
-                    <button
-                      onClick={() => setCompanyModalTab('info')}
-                      style={{
-                        padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: `1px solid ${currentTheme.border}`,
-                        background: companyModalTab === 'info' ? currentTheme.primary : 'transparent',
-                        color: companyModalTab === 'info' ? '#fff' : currentTheme.textPrimary,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Informações da empresa
-                    </button>
-                    <button
-                      onClick={() => setCompanyModalTab('finance')}
-                      style={{
-                        padding: '0.5rem 0.75rem', borderRadius: '0.375rem', border: `1px solid ${currentTheme.border}`,
-                        background: companyModalTab === 'finance' ? currentTheme.primary : 'transparent',
-                        color: companyModalTab === 'finance' ? '#fff' : currentTheme.textPrimary,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Dados financeiros
-                    </button>
+                  {/* Tabs do modal - estilo alinhado ao Detalhes do Usuário */}
+                  <div style={{ padding: '0.75rem 1.25rem', borderBottom: `1px solid ${currentTheme.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', width: 'max-content' }}>
+                      <button
+                        onClick={() => setCompanyModalTab('info')}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '12px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px',
+                          color: companyModalTab === 'info' ? currentTheme.primary : currentTheme.textSecondary,
+                          borderBottom: companyModalTab === 'info' ? `2px solid ${currentTheme.primary}` : '2px solid transparent',
+                          transition: 'all 0.2s', flex: '0 0 auto'
+                        }}
+                      >
+                        <Building2 size={18} />
+                        Informações da empresa
+                      </button>
+                      <button
+                        onClick={() => setCompanyModalTab('finance')}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '12px 24px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px',
+                          color: companyModalTab === 'finance' ? currentTheme.primary : currentTheme.textSecondary,
+                          borderBottom: companyModalTab === 'finance' ? `2px solid ${currentTheme.primary}` : '2px solid transparent',
+                          transition: 'all 0.2s', flex: '0 0 auto'
+                        }}
+                      >
+                        <CreditCard size={18} />
+                        Dados financeiros
+                      </button>
+                    </div>
                   </div>
 
                   {/* Conteúdo com rolagem */}
