@@ -258,6 +258,17 @@ export const apiService = {
   // Admin - Users
   getUsers: () => api.get(getConfig().API_ENDPOINTS.USERS),
   getUser: (id) => api.get(`${getConfig().API_ENDPOINTS.USERS}/${id}`),
+  // Admin - User Medias (tentativa com plural EN/PT)
+  getUserMedias: async (userId) => {
+    try {
+      return await api.get(`/private/admin/users/${userId}/medias`);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        return await api.get(`/private/admin/users/${userId}/midias`);
+      }
+      throw err;
+    }
+  },
   createUser: (data) => api.post(getConfig().API_ENDPOINTS.USERS, data),
   updateUser: (id, data) => api.put(`${getConfig().API_ENDPOINTS.UPDATE_USER}/${id}`, data),
   deleteUser: (id) => api.delete(`${getConfig().API_ENDPOINTS.USERS}/${id}`),

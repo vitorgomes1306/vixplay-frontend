@@ -31,7 +31,10 @@ import {
   BarChart3,
   TrendingUp,
   Activity,
-  Package
+  Package,
+  Building2,
+  LayoutDashboard,
+  Image
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { apiService } from '../services/api';
@@ -71,11 +74,12 @@ const Admin = () => {
   const [showBulkTitlesModal, setShowBulkTitlesModal] = useState(false);
   const [showManualPaymentModal, setShowManualPaymentModal] = useState(false);
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
+  const [userDetailsLoading, setUserDetailsLoading] = useState(false);
+  const [userDetailsTab, setUserDetailsTab] = useState('usuario');
 
   // Estados dos usuários
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
-  const [expandedUsers, setExpandedUsers] = useState(new Set());
   const [detailsUserId, setDetailsUserId] = useState(null);
 
   // Estados das configurações do sistema
@@ -189,31 +193,125 @@ const Admin = () => {
     }
   };
 
-  // Função para carregar detalhes do usuário
+  // Função para carregar detalhes do usuário (admin)
   const loadUserDetails = async (userId) => {
     try {
-      // Evitar 404: usar endpoint existente para dispositivos do usuário
-      const devicesResp = await apiService.getUserDevices?.(userId);
-      const devices = devicesResp?.data ?? [];
-      setUserDetails({ panels: [], devices, media: [], clients: [], campaigns: [] });
+      // Preferir rota já existente que retorna o usuário completo (como no admin.html)
+      const userResp = await apiService.getUser(userId);
+      const userData = userResp?.data || {};
+      // Alguns backends retornam o usuário aninhado em "user"/"User"/"usuario"/"Usuario" ou dentro de data.user
+      const rootUser = (
+        userData.user || userData.User || userData.usuario || userData.Usuario ||
+        (userData.data && (userData.data.user || userData.data.User)) ||
+        userData
+      );
+
+      // Utilitário para normalizar listas possivelmente encapsuladas
+      const normalizeList = (src) => {
+        if (!src) return [];
+        if (Array.isArray(src)) return src;
+        if (typeof src === 'object') {
+          const keys = ['items', 'list', 'data', 'medias', 'media', 'Medias', 'Midia', 'midias', 'midia'];
+          for (const k of keys) {
+            const v = src[k];
+            if (Array.isArray(v)) return v;
+          }
+        }
+        return [];
+      };
+
+      // Painéis: aceitar várias convenções no payload
+      const panels = Array.isArray(rootUser.panels)
+        ? rootUser.panels
+        : (Array.isArray(rootUser.paineis)
+            ? rootUser.paineis
+            : (Array.isArray(rootUser.Panels)
+                ? rootUser.Panels
+                : (Array.isArray(rootUser.Paineis)
+                    ? rootUser.Paineis
+                    : (Array.isArray(rootUser.panel)
+                        ? rootUser.panel
+                        : []))));
+
+      // Dispositivos: tentar flatten dos painéis; se vazio, buscar pela rota dedicada
+      let devices = [];
+      if (panels.length > 0) {
+        devices = panels.flatMap(p => Array.isArray(p.devices) ? p.devices : []);
+      }
+      if (!Array.isArray(devices) || devices.length === 0) {
+        try {
+          const devResp = await apiService.getUserDevices(userId);
+          devices = Array.isArray(devResp?.data) ? devResp.data : [];
+        } catch (_) {
+          // Ignorar erro secundário; manter devices vazio
+          devices = [];
+        }
+      }
+
+      // Mídias: usar rota dedicada do Admin para mídias do usuário selecionado
+      let media = [];
+      try {
+        const resp = await apiService.getUserMedias(userId);
+        media = Array.isArray(resp?.data) ? resp.data : normalizeList(resp?.data);
+      } catch (_) {
+        // Fallback: tentar extrair do payload do usuário (allMedias/medias/media)
+        const candidates = [rootUser.allMedias, rootUser.medias, rootUser.media, rootUser.Medias, rootUser.Midia, rootUser.midias, rootUser.midia];
+        for (const src of candidates) {
+          const arr = normalizeList(src);
+          if (arr.length > 0) { media = arr; break; }
+        }
+      }
+
+      // Não derivar de painéis: a aba "Midias" deve listar apenas
+      // mídias diretamente relacionadas ao usuário (sem relação com painéis).
+
+      // Fallback final: se ainda vazio e o usuário selecionado for o mesmo usuário logado, usar getMedias()
+      if ((!Array.isArray(media) || media.length === 0)) {
+        try {
+          const storedUser = localStorage.getItem('vixplay_user');
+          const appUser = storedUser ? JSON.parse(storedUser) : null;
+          const isSameUser = appUser?.id && String(appUser.id) === String(userId);
+          if (isSameUser) {
+            const resp = await apiService.getMedias();
+            const ownMedias = Array.isArray(resp?.data) ? resp.data : [];
+            media = ownMedias;
+          }
+        } catch (_) {
+          // Ignorar erro do fallback; manter media como []
+        }
+      }
+
+      // Clientes
+      const clients = Array.isArray(userData.clients) ? userData.clients : [];
+
+      // Campanhas: se existir em userData, usar; senão, coletar das campanhas dos clientes
+      let campaigns = Array.isArray(userData.campaigns) ? userData.campaigns : [];
+      if (campaigns.length === 0 && clients.length > 0) {
+        campaigns = clients.flatMap(c => Array.isArray(c.campaigns) ? c.campaigns : []);
+      }
+
+      setUserDetails({ panels, devices, media, clients, campaigns });
     } catch (error) {
-      // Se falhar (ex.: endpoint indisponível), ainda garantir fallback seguro
-      console.error('Erro ao carregar detalhes do usuário (devices):', error);
+      console.error('Erro ao carregar detalhes do usuário:', error);
       setUserDetails({ panels: [], devices: [], media: [], clients: [], campaigns: [] });
     }
   };
 
-  // Função para alternar detalhes do usuário
-  const toggleUserDetails = (userId) => {
-    const newExpanded = new Set(expandedUsers);
-    if (newExpanded.has(userId)) {
-      newExpanded.delete(userId);
-    } else {
-      newExpanded.add(userId);
-      setDetailsUserId(userId);
-      loadUserDetails(userId);
-    }
-    setExpandedUsers(newExpanded);
+  // Abrir modal de detalhes do usuário
+  const openUserDetailsModal = (user) => {
+    if (!user?.id) return;
+    setSelectedUser(user);
+    setDetailsUserId(user.id);
+    setUserDetailsTab('usuario');
+    setShowUserDetailsModal(true);
+    setUserDetailsLoading(true);
+    loadUserDetails(user.id).finally(() => setUserDetailsLoading(false));
+  };
+
+  const closeUserDetailsModal = () => {
+    setShowUserDetailsModal(false);
+    setUserDetailsTab('usuario');
+    setDetailsUserId(null);
   };
 
   // Handlers de exclusão (admin)
@@ -579,17 +677,10 @@ const Admin = () => {
             setSearchTerm={setSearchTerm}
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
-            expandedUsers={expandedUsers}
-            toggleUserDetails={toggleUserDetails}
+            openUserDetailsModal={openUserDetailsModal}
             openEditUserModal={openEditUserModal}
             setShowDeleteModal={setShowDeleteModal}
             setSelectedUser={setSelectedUser}
-            userDetails={userDetails}
-            onDeletePanel={handleDeletePanel}
-            onDeleteDevice={handleDeleteDevice}
-            onDeleteMedia={handleDeleteMedia}
-            onDeleteClient={handleDeleteClient}
-            onDeleteCampaign={handleDeleteCampaign}
             styles={styles}
           />
         )}
@@ -631,6 +722,25 @@ const Admin = () => {
           styles={styles}
         />
       )}
+
+      {showUserDetailsModal && (
+        <UserDetailsModal
+          visible={showUserDetailsModal}
+          onClose={closeUserDetailsModal}
+          user={selectedUser}
+          details={userDetails}
+          detailsLoading={userDetailsLoading}
+          tab={userDetailsTab}
+          setTab={setUserDetailsTab}
+          styles={styles}
+          onDeletePanel={handleDeletePanel}
+          onDeleteDevice={handleDeleteDevice}
+          onDeleteMedia={handleDeleteMedia}
+          onDeleteClient={handleDeleteClient}
+          onDeleteCampaign={handleDeleteCampaign}
+          refreshDetails={() => detailsUserId ? loadUserDetails(detailsUserId) : Promise.resolve()}
+        />
+      )}
     </div>
   );
 };
@@ -642,17 +752,10 @@ const UsersTab = ({
   setSearchTerm, 
   filterStatus, 
   setFilterStatus,
-  expandedUsers,
-  toggleUserDetails,
+  openUserDetailsModal,
   openEditUserModal,
   setShowDeleteModal,
   setSelectedUser,
-  userDetails,
-  onDeletePanel,
-  onDeleteDevice,
-  onDeleteMedia,
-  onDeleteClient,
-  onDeleteCampaign,
   styles 
 }) => (
   <div>
@@ -690,17 +793,10 @@ const UsersTab = ({
         <UserCard
           key={user.id}
           user={user}
-          isExpanded={expandedUsers.has(user.id)}
-          toggleUserDetails={toggleUserDetails}
+          openUserDetailsModal={openUserDetailsModal}
           openEditUserModal={openEditUserModal}
           setShowDeleteModal={setShowDeleteModal}
           setSelectedUser={setSelectedUser}
-          userDetails={userDetails}
-          onDeletePanel={onDeletePanel}
-          onDeleteDevice={onDeleteDevice}
-          onDeleteMedia={onDeleteMedia}
-          onDeleteClient={onDeleteClient}
-          onDeleteCampaign={onDeleteCampaign}
           styles={styles}
         />
       ))}
@@ -711,17 +807,10 @@ const UsersTab = ({
 // Componente do card de usuário
 const UserCard = ({ 
   user, 
-  isExpanded, 
-  toggleUserDetails, 
+  openUserDetailsModal,
   openEditUserModal, 
   setShowDeleteModal, 
   setSelectedUser,
-  userDetails,
-  onDeletePanel,
-  onDeleteDevice,
-  onDeleteMedia,
-  onDeleteClient,
-  onDeleteCampaign,
   styles 
 }) => (
   <div style={styles.userCard}>
@@ -747,7 +836,7 @@ const UserCard = ({
       
       <div style={styles.userActions}>
         <button
-          onClick={() => toggleUserDetails(user.id)}
+          onClick={() => openUserDetailsModal(user)}
           style={styles.actionButton}
           title="Ver detalhes"
         >
@@ -773,113 +862,310 @@ const UserCard = ({
       </div>
     </div>
 
-    {isExpanded && userDetails && (
-      <UserDetailsExpanded 
-        userDetails={userDetails} 
-        styles={styles}
-        onDeletePanel={onDeletePanel}
-        onDeleteDevice={onDeleteDevice}
-        onDeleteMedia={onDeleteMedia}
-        onDeleteClient={onDeleteClient}
-        onDeleteCampaign={onDeleteCampaign}
-      />
-    )}
+    {/* Detalhes expandidos substituídos por modal */}
   </div>
 );
 
-// Componente de detalhes expandidos do usuário
-const UserDetailsExpanded = ({ userDetails, styles, onDeletePanel, onDeleteDevice, onDeleteMedia, onDeleteClient, onDeleteCampaign }) => (
-  <div style={styles.userDetailsExpanded}>
-    <div style={styles.detailsGrid}>
-      <div style={styles.detailsSection}>
-        <h4 style={styles.detailsTitle}>Painéis ({userDetails.panels?.length || 0})</h4>
-        {userDetails.panels?.map(panel => (
-          <div key={panel.id} style={styles.detailItem}>
-            <span>{panel.name}</span>
-            <button
-              onClick={() => onDeletePanel(panel.id)}
-              style={styles.actionButton}
-              title="Excluir Painel"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-      </div>
+// Modal de detalhes do usuário com abas
+const UserDetailsModal = ({
+  visible,
+  onClose,
+  user,
+  details,
+  detailsLoading,
+  tab,
+  setTab,
+  styles,
+  onDeletePanel,
+  onDeleteDevice,
+  onDeleteMedia,
+  onDeleteClient,
+  onDeleteCampaign,
+  refreshDetails
+}) => {
+  const [previewMedia, setPreviewMedia] = useState(null);
+  const [editingMedia, setEditingMedia] = useState(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', url: '', type: '' });
 
-      <div style={styles.detailsSection}>
-        <h4 style={styles.detailsTitle}>Dispositivos ({userDetails.devices?.length || 0})</h4>
-        {userDetails.devices?.map(device => (
-          <div key={device.id} style={styles.detailItem}>
-            <span>{device.name}</span>
-            <span style={device.licenceActive ? styles.badge.active : styles.badge.blocked}>
-              {device.licenceActive ? 'Ativo' : 'Inativo'}
-            </span>
-            <button
-              onClick={() => onDeleteDevice(device.id)}
-              style={styles.actionButton}
-              title="Excluir Dispositivo"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-      </div>
+  const openPreview = (m) => {
+    setPreviewMedia(m);
+    setEditingMedia(null);
+    setEditForm({
+      title: m.title || m.name || '',
+      description: m.description || '',
+      url: m.url || '',
+      type: m.type || ''
+    });
+  };
+  const closePreview = () => {
+    setPreviewMedia(null);
+    setEditingMedia(null);
+  };
+  const startEditing = () => {
+    if (!previewMedia) return;
+    setEditingMedia(previewMedia);
+  };
+  const saveEdit = async () => {
+    if (!editingMedia) return;
+    try {
+      await apiService.updateMedia(editingMedia.id, {
+        title: editForm.title,
+        description: editForm.description
+      });
+      setEditingMedia(null);
+      if (typeof refreshDetails === 'function') {
+        await refreshDetails();
+      }
+    } catch (err) {
+      console.error('Erro ao atualizar mídia:', err);
+      alert(err?.response?.data?.error || 'Erro ao atualizar mídia');
+    }
+  };
 
-      <div style={styles.detailsSection}>
-        <h4 style={styles.detailsTitle}>Mídias ({userDetails.media?.length || 0})</h4>
-        {userDetails.media?.map(media => (
-          <div key={media.id} style={styles.detailItem}>
-            <span>{media.title}</span>
-            <button
-              onClick={() => onDeleteMedia(media.id)}
-              style={styles.actionButton}
-              title="Excluir Mídia"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {Array.isArray(userDetails.clients) && (
-        <div style={styles.detailsSection}>
-          <h4 style={styles.detailsTitle}>Clientes ({userDetails.clients?.length || 0})</h4>
-          {userDetails.clients?.map(client => (
-            <div key={client.id} style={styles.detailItem}>
-              <span>{client.name || client.workName || client.email}</span>
-              <button
-                onClick={() => onDeleteClient(client.id)}
-                style={styles.actionButton}
-                title="Excluir Cliente"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
+  if (!visible) return null;
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modal}>
+        <div style={styles.modalHeader}>
+          <h3 style={styles.modalTitle}>Detalhes do Usuário</h3>
+          <button onClick={onClose} style={styles.modalCloseButton}>
+            <X size={20} />
+          </button>
         </div>
-      )}
 
-      {Array.isArray(userDetails.campaigns) && (
-        <div style={styles.detailsSection}>
-          <h4 style={styles.detailsTitle}>Campanhas ({userDetails.campaigns?.length || 0})</h4>
-          {userDetails.campaigns?.map(campaign => (
-            <div key={campaign.id} style={styles.detailItem}>
-              <span>{campaign.title || campaign.name}</span>
+        {/* Abas - estilo igual ao /admin com ícones Lucide */}
+        <div style={styles.tabsContainer}>
+          <div style={styles.tabs}>
+            {[
+              { key: 'usuario', label: 'Perfil', Icon: User },
+              { key: 'empresas', label: 'Empresas', Icon: Building2 },
+              { key: 'dispositivos', label: 'Dispositivos', Icon: Monitor },
+              { key: 'paineis', label: 'Paineis', Icon: LayoutDashboard },
+              { key: 'midias', label: 'Midias', Icon: Image },
+              { key: 'clientes', label: 'Clientes', Icon: Users },
+              { key: 'campanhas', label: 'Campanhas', Icon: Target },
+              { key: 'logs', label: 'Logs', Icon: FileText },
+            ].map(t => (
               <button
-                onClick={() => onDeleteCampaign(campaign.id)}
-                style={styles.actionButton}
-                title="Excluir Campanha"
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                style={{
+                  ...styles.tab,
+                  ...(tab === t.key ? styles.activeTab : {})
+                }}
               >
-                <Trash2 size={16} />
+                <t.Icon size={18} />
+                {t.label}
               </button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      )}
+        <div style={styles.modalBody}>
+          {detailsLoading && (
+            <div style={{ padding: 16 }}>Carregando...</div>
+          )}
+
+          {!detailsLoading && tab === 'usuario' && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Perfil</h4>
+              <div style={styles.detailItem}><span>Nome</span><span>{user?.name}</span></div>
+              <div style={styles.detailItem}><span>E-mail</span><span>{user?.email}</span></div>
+              <div style={styles.detailItem}><span>Status</span><span>{user?.isBlocked ? 'Bloqueado' : 'Ativo'}</span></div>
+              <div style={styles.detailItem}><span>Tipo</span><span>{user?.isAdmin ? 'Admin' : 'Usuário'}</span></div>
+              {user?.dayOfPayment !== undefined && (
+                <div style={styles.detailItem}><span>Dia de Pagamento</span><span>{user?.dayOfPayment}</span></div>
+              )}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'empresas' && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Empresas relacionadas</h4>
+              <div style={{ padding: 12, color: '#64748b' }}>
+                Exibição de empresas do usuário alvo será adicionada. No momento, utilize a aba "Minhas Empresas" no perfil.
+              </div>
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'dispositivos' && Array.isArray(details?.devices) && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Dispositivos ({details.devices.length})</h4>
+              {details.devices.map((device) => (
+                <div key={device.id} style={styles.detailItem}>
+                  <span>{device.name || device.serialNumber || device.macAddress}</span>
+                  <button onClick={() => onDeleteDevice(device.id)} style={styles.actionButton} title="Excluir Dispositivo">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'paineis' && Array.isArray(details?.panels) && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Paineis ({details.panels.length})</h4>
+              {details.panels.map((panel) => (
+                <div key={panel.id} style={styles.detailItem}>
+                  <span>{panel.name || panel.title}</span>
+                  <button onClick={() => onDeletePanel(panel.id)} style={styles.actionButton} title="Excluir Painel">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'midias' && Array.isArray(details?.media) && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Midias ({details.media.length})</h4>
+              <div style={styles.mediaGrid}>
+                {details.media.map((m, idx) => {
+                  const safeKey = m?.id ?? `${m?.url || 'no-url'}-${m?.panelId || 'no-panel'}-${idx}`;
+                  const isImage = (m.type?.toLowerCase().includes('image') || m.type?.toLowerCase() === 'photo');
+                  const isVideo = m.type?.toLowerCase().includes('video');
+                  const mediaTypeLabel = isImage ? 'Foto' : isVideo ? 'Vídeo' : 'Widget';
+                  const mediaTypeClass = isImage ? 'bg-primary' : isVideo ? 'bg-danger' : 'bg-secondary';
+                  return (
+                    <div key={safeKey} style={styles.mediaCard}>
+                      <div style={styles.mediaThumb} onClick={() => openPreview(m)} title="Visualizar">
+                        {m.url ? (
+                          isImage ? (
+                            <img src={m.url} alt={m.title || m.name || 'Mídia'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                          ) : isVideo ? (
+                            <video src={m.url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} muted />
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', borderRadius: '8px', border: `1px solid ${styles.border || '#e5e7eb'}` }}>Link</div>
+                          )
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', borderRadius: '8px', border: `1px solid ${styles.border || '#e5e7eb'}` }}>Sem prévia</div>
+                        )}
+                      </div>
+                      <div style={styles.mediaInfo}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                          <div style={styles.mediaTitle}>{m.title || m.name || m.filename || 'Mídia'}</div>
+                          <span className={`badge ${mediaTypeClass} rounded-pill`}>{mediaTypeLabel}</span>
+                        </div>
+                        <div style={styles.mediaActions}>
+                          <button onClick={() => openPreview(m)} style={styles.actionButton} title="Ampliar">
+                            <Eye size={16} />
+                          </button>
+                          <button onClick={() => { setPreviewMedia(m); startEditing(); }} style={styles.actionButton} title="Editar">
+                            <Edit size={16} />
+                          </button>
+                          <button onClick={() => onDeleteMedia(m.id)} style={styles.actionButton} title="Excluir">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {previewMedia && (
+                <div style={styles.modalOverlay}>
+                  <div style={styles.lightbox}>
+                    <div style={styles.lightboxHeader}>
+                      <h4 style={styles.modalTitle}>{previewMedia.title || previewMedia.name || 'Prévia da Mídia'}</h4>
+                      <button onClick={closePreview} style={styles.modalCloseButton} title="Fechar">
+                        <X size={20} />
+                      </button>
+                    </div>
+                    <div style={styles.lightboxBody}>
+                      {previewMedia.url ? (
+                        (previewMedia.type?.toLowerCase().includes('image') || previewMedia.type?.toLowerCase() === 'photo') ? (
+                          <img src={previewMedia.url} alt={previewMedia.title || 'Prévia'} style={{ maxWidth: '100%', maxHeight: '50vh', objectFit: 'contain', borderRadius: '8px' }} />
+                        ) : previewMedia.type?.toLowerCase().includes('video') ? (
+                          <video src={previewMedia.url} style={{ maxWidth: '100%', maxHeight: '50vh', borderRadius: '8px' }} controls />
+                        ) : (
+                          <a href={previewMedia.url} target="_blank" rel="noreferrer" style={{ color: styles.linkColor || '#2563eb' }}>{previewMedia.url}</a>
+                        )
+                      ) : (
+                        <div style={{ padding: 16, color: '#64748b' }}>Sem URL disponível para prévia.</div>
+                      )}
+
+                      {editingMedia && (
+                        <div style={{ marginTop: 16 }}>
+                          <div style={{ marginBottom: 8 }}>
+                            <label style={styles.label}>Título</label>
+                            <input type="text" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} style={styles.input} />
+                          </div>
+                          <div style={{ marginBottom: 8 }}>
+                            <label style={styles.label}>Descrição</label>
+                            <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} style={{ ...styles.input, minHeight: 80 }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={styles.lightboxFooter}>
+                      {editingMedia ? (
+                        <>
+                          <button onClick={saveEdit} style={styles.primaryButton}>
+                            <Check size={16} />
+                            Salvar alterações
+                          </button>
+                          <button onClick={() => setEditingMedia(null)} style={styles.secondaryButton}>
+                            Cancelar edição
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={startEditing} style={styles.primaryButton}>
+                            <Edit size={16} />
+                            Editar dados
+                          </button>
+                          <button onClick={() => onDeleteMedia(previewMedia.id)} style={styles.dangerButton}>
+                            <Trash2 size={16} />
+                            Excluir
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'clientes' && Array.isArray(details?.clients) && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Clientes ({details.clients.length})</h4>
+              {details.clients.map((c) => (
+                <div key={c.id} style={styles.detailItem}>
+                  <span>{c.name || c.workName || c.email}</span>
+                  <button onClick={() => onDeleteClient(c.id)} style={styles.actionButton} title="Excluir Cliente">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'campanhas' && Array.isArray(details?.campaigns) && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Campanhas ({details.campaigns.length})</h4>
+              {details.campaigns.map((camp) => (
+                <div key={camp.id} style={styles.detailItem}>
+                  <span>{camp.title || camp.name}</span>
+                  <button onClick={() => onDeleteCampaign(camp.id)} style={styles.actionButton} title="Excluir Campanha">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!detailsLoading && tab === 'logs' && (
+            <div style={styles.detailsSection}>
+              <h4 style={styles.detailsTitle}>Logs</h4>
+              <div style={{ padding: 12, color: '#64748b' }}>Logs relacionados ao usuário serão adicionados posteriormente.</div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Componente da aba de configurações
 const SettingsTab = ({ systemConfig, setSystemConfig, saveSystemConfig, styles }) => (
@@ -1368,6 +1654,78 @@ const getStyles = (theme) => ({
     padding: '24px'
   },
 
+  mediaGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gap: '16px'
+  },
+
+  mediaCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  },
+
+  mediaThumb: {
+    width: '100%',
+    height: '120px',
+    borderRadius: '8px',
+    border: `1px solid ${theme.border}`,
+    overflow: 'hidden',
+    cursor: 'pointer'
+  },
+
+  mediaInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '8px'
+  },
+
+  mediaTitle: {
+    fontSize: '14px',
+    color: theme.textPrimary,
+    wordBreak: 'break-word',
+    whiteSpace: 'normal'
+  },
+
+  mediaActions: {
+    display: 'flex',
+    gap: '6px'
+  },
+
+  lightbox: {
+    backgroundColor: theme.cardBackground,
+    borderRadius: '12px',
+    border: `1px solid ${theme.border}`,
+    maxWidth: '900px',
+    width: '900px',
+    maxHeight: '70vh',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
+  },
+
+  lightboxHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '16px',
+    borderBottom: `1px solid ${theme.border}`
+  },
+
+  lightboxBody: {
+    padding: '16px',
+    overflowY: 'auto'
+  },
+
+  lightboxFooter: {
+    display: 'flex',
+    gap: '12px',
+    padding: '16px',
+    borderTop: `1px solid ${theme.border}`
+  },
+
   controls: {
     display: 'flex',
     gap: '16px',
@@ -1767,10 +2125,12 @@ const getStyles = (theme) => ({
     backgroundColor: theme.cardBackground,
     borderRadius: '12px',
     border: `1px solid ${theme.border}`,
-    maxWidth: '600px',
-    width: '90%',
-    maxHeight: '90vh',
-    overflow: 'auto'
+    maxWidth: '1200px',
+    width: '1200px',
+    height: '80vh',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column'
   },
 
   modalHeader: {
@@ -1798,7 +2158,9 @@ const getStyles = (theme) => ({
   },
 
   modalBody: {
-    padding: '20px'
+    padding: '20px',
+    flex: 1,
+    overflowY: 'auto'
   },
 
   modalFooter: {
