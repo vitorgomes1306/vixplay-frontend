@@ -939,6 +939,37 @@ const UserDetailsModal = ({
   const [editingMedia, setEditingMedia] = useState(null);
   const [editForm, setEditForm] = useState({ title: '', description: '', url: '', type: '' });
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [expandedPanels, setExpandedPanels] = useState(() => new Set());
+  const [panelMediaMap, setPanelMediaMap] = useState({});
+  const [panelMediaLoading, setPanelMediaLoading] = useState({});
+  const [panelMediaError, setPanelMediaError] = useState({});
+
+  const loadPanelMedias = async (panelId) => {
+    setPanelMediaLoading(prev => ({ ...prev, [panelId]: true }));
+    setPanelMediaError(prev => ({ ...prev, [panelId]: '' }));
+    try {
+      const resp = await apiService.getPanelMedias(panelId);
+      const list = Array.isArray(resp?.data) ? resp.data : [];
+      setPanelMediaMap(prev => ({ ...prev, [panelId]: list }));
+    } catch (err) {
+      console.error('Erro ao carregar mídias do painel:', err);
+      setPanelMediaError(prev => ({ ...prev, [panelId]: err?.response?.data?.error || 'Erro ao carregar mídias do painel' }));
+      setPanelMediaMap(prev => ({ ...prev, [panelId]: [] }));
+    } finally {
+      setPanelMediaLoading(prev => ({ ...prev, [panelId]: false }));
+    }
+  };
+  const togglePanelExpanded = (id) => {
+    setExpandedPanels((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+    // Se estamos expandindo e ainda não carregamos as mídias deste painel, buscar agora
+    if (!expandedPanels.has(id) && !Array.isArray(panelMediaMap[id])) {
+      loadPanelMedias(id);
+    }
+  };
 
   const openPreview = (m) => {
     setPreviewMedia(m);
@@ -1287,14 +1318,118 @@ const UserDetailsModal = ({
           {!detailsLoading && tab === 'paineis' && Array.isArray(details?.panels) && (
             <div style={styles.detailsSection}>
               <h4 style={styles.detailsTitle}>Paineis ({details.panels.length})</h4>
-              {details.panels.map((panel) => (
-                <div key={panel.id} style={styles.detailItem}>
-                  <span>{panel.name || panel.title}</span>
-                  <button onClick={() => onDeletePanel(panel.id)} style={styles.actionButton} title="Excluir Painel">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
+              <div style={styles.panelsGrid}>
+                {details.panels.map((panel) => {
+                  const title = panel?.name || panel?.title || `Painel ${panel?.id}`;
+                  const isActive = (typeof panel?.active === 'boolean') ? panel.active
+                    : (typeof panel?.isActive === 'boolean') ? panel.isActive
+                    : (panel?.status ? String(panel.status).toLowerCase() === 'ativo' : undefined);
+                  const typeLabel = panel?.type === 'FULL_SCREEN' ? 'Tela Cheia' : (panel?.type || '—');
+
+                  return (
+                    <div key={panel.id || title} style={styles.panelCard}>
+                      <div style={styles.panelHeader}>
+                        <div style={styles.panelTitle}>
+                          <LayoutDashboard size={18} />
+                          <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+                        </div>
+                        <div style={styles.panelActions}>
+                          <button
+                            onClick={() => navigate(`/panel/${panel.id}`)}
+                            style={styles.actionButton}
+                            title="Visualizar"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => navigate(`/panel/${panel.id}`)}
+                            style={styles.actionButton}
+                            title="Editar"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => onDeletePanel(panel.id)}
+                            style={styles.actionButton}
+                            title="Excluir"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => togglePanelExpanded(panel.id)}
+                            style={styles.actionButton}
+                            title={expandedPanels.has(panel.id) ? 'Ocultar mídias' : 'Mostrar mídias'}
+                          >
+                            {expandedPanels.has(panel.id) ? '−' : '+'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={styles.panelBadges}>
+                        {isActive !== undefined && (
+                          <span className={`badge ${isActive ? 'bg-success' : 'bg-secondary'} rounded-pill`}>
+                            {isActive ? 'Ativo' : 'Inativo'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={styles.panelInfoGrid}>
+                        <div style={styles.panelInfoItem}>
+                          <span style={styles.deviceLabel}>Tipo</span>
+                          <span style={styles.deviceValue}>{typeLabel}</span>
+                        </div>
+                        <div style={styles.panelInfoItem}>
+                          <span style={styles.deviceLabel}>Criado em</span>
+                          <span style={styles.deviceValue}>{panel?.createdAt ? new Date(panel.createdAt).toLocaleDateString('pt-BR') : '—'}</span>
+                        </div>
+                        <div style={styles.panelInfoItem}>
+                          <span style={styles.deviceLabel}>ID</span>
+                          <span style={styles.deviceValue}>{panel?.id ?? '—'}</span>
+                        </div>
+                      </div>
+
+                      {expandedPanels.has(panel.id) && (
+                        <div style={styles.panelMediaSection}>
+                          {panelMediaLoading[panel.id] ? (
+                            <div style={{ padding: 8 }}>Carregando mídias...</div>
+                          ) : panelMediaError[panel.id] ? (
+                            <div style={styles.panelMediaEmpty}>{panelMediaError[panel.id]}</div>
+                          ) : Array.isArray(panelMediaMap[panel.id]) ? (
+                            panelMediaMap[panel.id].length === 0 ? (
+                              <div style={styles.panelMediaEmpty}>Sem mídias associadas a este painel.</div>
+                            ) : (
+                              <div style={styles.panelMediaRow}>
+                                {panelMediaMap[panel.id].map((m, idx) => {
+                                  const safeKey = m?.id ?? `${m?.url || 'no-url'}-${m?.panelId || 'no-panel'}-${idx}`;
+                                  const isImage = (m.type?.toLowerCase().includes('image') || m.type?.toLowerCase() === 'photo');
+                                  const isVideo = m.type?.toLowerCase().includes('video');
+                                  return (
+                                    <div key={safeKey} style={styles.panelMediaThumb} onClick={() => openPreview(m)} title={m.title || m.name || 'Mídia'}>
+                                      {m.url ? (
+                                        isImage ? (
+                                          <img src={m.url} alt={m.title || m.name || 'Mídia'} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+                                        ) : isVideo ? (
+                                          <video src={m.url} style={{ width: '100%', height: '100%', borderRadius: 6 }} muted />
+                                        ) : (
+                                          <div style={styles.panelMediaLink}>Link</div>
+                                        )
+                                      ) : (
+                                        <div style={styles.panelMediaEmptyThumb}>Sem prévia</div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )
+                          ) : (
+                            <div style={styles.panelMediaEmpty}>Mídias não carregadas.</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -2097,6 +2232,118 @@ const getStyles = (theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: '8px'
+  },
+
+  // Paineis (grid de cards)
+  panelsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '16px'
+  },
+
+  panelCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    backgroundColor: theme.cardBackground,
+    border: `1px solid ${theme.border}`,
+    borderRadius: '12px',
+    padding: '12px'
+  },
+
+  panelHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px'
+  },
+
+  panelTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    color: theme.textPrimary
+  },
+
+  panelActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  },
+
+  panelBadges: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '8px'
+  },
+
+  panelInfoGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: '8px',
+    marginTop: '8px'
+  },
+
+  panelInfoItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '8px',
+    color: theme.textSecondary,
+    fontSize: '12px'
+  },
+
+  panelMediaSection: {
+    marginTop: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px'
+  },
+
+  panelMediaRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    overflowX: 'auto',
+    paddingBottom: '4px'
+  },
+
+  panelMediaThumb: {
+    width: '72px',
+    height: '48px',
+    borderRadius: '6px',
+    border: `1px solid ${theme.border}`,
+    overflow: 'hidden',
+    cursor: 'pointer',
+    flex: '0 0 auto'
+  },
+
+  panelMediaLink: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    color: theme.textSecondary,
+    fontSize: '12px'
+  },
+
+  panelMediaEmptyThumb: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+    color: theme.textSecondary,
+    fontSize: '12px'
+  },
+
+  panelMediaEmpty: {
+    color: theme.textSecondary,
+    fontSize: '12px'
   },
 
   mediaCard: {
